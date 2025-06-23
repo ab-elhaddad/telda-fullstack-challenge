@@ -4,16 +4,16 @@
   "description": "Express Node.js API with TypeScript for Movie Application",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/server.ts",
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node -r ./tsconfig-paths-bootstrap.js dist/server.js",
     "test": "jest --detectOpenHandles",
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write 'src/**/*.{ts,js,json}'",
     "prepare": "cd .. && husky install backend/.husky",
-    "seed-movies": "ts-node src/scripts/seed-movies.ts"
+    "seed-movies": "ts-node -r tsconfig-paths/register src/scripts/seed-movies.ts"
   },
   "keywords": [
     "express",
@@ -70,6 +70,7 @@
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.0.4"
   }
 }
