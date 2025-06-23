@@ -1,0 +1,530 @@
+import { useState, useRef, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuthStore } from "@/stores/auth.store";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Modal, useModal } from "@/components/ui/modal";
+import { SkeletonCard } from "@/components/ui/skeleton";
+import authService from "@/services/auth.service";
+import FormError from "@/components/ui/formError";
+import { useToast } from "@/components/ui/toast";
+
+export function ProfilePage() {
+  const { user, setUser } = useAuthStore();
+  const { isOpen, openModal, closeModal } = useModal();
+  const { showToast } = useToast();
+
+  // Refs for focus management
+  const currentPasswordRef = useRef<HTMLInputElement>(null);
+
+  // Add profile loading query
+  const { data: profileData, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: () => authService.getCurrentUser(),
+    initialData: user,
+  });
+
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  // Update form data when profile is loaded
+  useEffect(() => {
+    if (profileData) {
+      setFormData((prev) => ({
+        ...prev,
+        name: profileData.name || "",
+        email: profileData.email || "",
+      }));
+    }
+  }, [profileData]);
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Update profile mutation
+  const { mutate: updateProfile, isPending: isUpdating } = useMutation({
+    mutationFn: (data: { name: string; email: string }) =>
+      authService.updateProfile(data),
+    onSuccess: (data) => {
+      if (data.user) {
+        setUser(data.user);
+        showToast("Profile updated successfully", "success");
+      }
+    },
+    onError: (error: any) => {
+      showToast(
+        error?.response?.data?.message || "Failed to update profile",
+        "error"
+      );
+    },
+  });
+
+  // Change password mutation
+  const { mutate: changePassword, isPending: isChangingPassword } = useMutation(
+    {
+      mutationFn: (data: { currentPassword: string; newPassword: string }) =>
+        authService.changePassword(data),
+      onSuccess: () => {
+        showToast("Password changed successfully", "success");
+        closeModal();
+        resetPasswordForm();
+      },
+      onError: (error: any) => {
+        showToast(
+          error?.response?.data?.message || "Failed to change password",
+          "error"
+        );
+      },
+    }
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateProfileForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Email is invalid";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validatePasswordForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.currentPassword) {
+      newErrors.currentPassword = "Current password is required";
+    }
+
+    if (!formData.newPassword) {
+      newErrors.newPassword = "New password is required";
+    } else if (formData.newPassword.length < 6) {
+      newErrors.newPassword = "Password must be at least 6 characters";
+    }
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (validateProfileForm()) {
+      updateProfile({
+        name: formData.name,
+        email: formData.email,
+      });
+    }
+  };
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (validatePasswordForm()) {
+      changePassword({
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+      });
+    }
+  };
+
+  const resetPasswordForm = () => {
+    setFormData((prev) => ({
+      ...prev,
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    }));
+    setErrors({});
+  };
+
+  // Focus on currentPassword field when modal opens
+  useEffect(() => {
+    if (isOpen && currentPasswordRef.current) {
+      // Short timeout to ensure modal is rendered before focusing
+      setTimeout(() => {
+        currentPasswordRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
+
+  return (
+    <div className="container mx-auto py-8 max-w-3xl">
+      <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
+
+      <div className="space-y-8">
+        {isLoadingProfile ? (
+          <>
+            {/* Personal Information Skeleton */}
+            <Card data-testid="skeleton-card">
+              <CardHeader>
+                <SkeletonCard className="h-7 w-40" aria-label="Loading title" data-testid="skeleton-title" />
+                <SkeletonCard className="h-4 w-full max-w-[250px]" aria-label="Loading subtitle" data-testid="skeleton-subtitle" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <SkeletonCard className="h-10 w-full" aria-label="Loading input field" data-testid="skeleton-input" />
+                  <SkeletonCard className="h-10 w-full" aria-label="Loading input field" data-testid="skeleton-input" />
+                </div>
+              </CardContent>
+              <CardFooter className="justify-end space-x-2">
+                <SkeletonCard className="h-9 w-24" aria-label="Loading button" data-testid="skeleton-button" />
+              </CardFooter>
+            </Card>
+            
+            {/* Security Settings Skeleton */}
+            <Card data-testid="skeleton-card">
+              <CardHeader>
+                <SkeletonCard className="h-7 w-40" aria-label="Loading title" data-testid="skeleton-title" />
+              </CardHeader>
+              <CardContent>
+                <SkeletonCard className="h-4 w-full max-w-[350px]" aria-label="Loading text" data-testid="skeleton-text" />
+                <div className="mt-4">
+                  <SkeletonCard className="h-9 w-32" aria-label="Loading button" data-testid="skeleton-button" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Account Preferences Skeleton */}
+            <Card data-testid="skeleton-card">
+              <CardHeader>
+                <SkeletonCard className="h-7 w-40" aria-label="Loading title" data-testid="skeleton-title" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <SkeletonCard className="h-5 w-40" aria-label="Loading title" data-testid="skeleton-title" />
+                      <SkeletonCard className="h-4 w-60" aria-label="Loading description" data-testid="skeleton-text" />
+                    </div>
+                    <SkeletonCard className="h-6 w-11" aria-label="Loading toggle" data-testid="skeleton-toggle" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <SkeletonCard className="h-5 w-40" aria-label="Loading title" data-testid="skeleton-title" />
+                      <SkeletonCard className="h-4 w-60" aria-label="Loading description" data-testid="skeleton-text" />
+                    </div>
+                    <SkeletonCard className="h-6 w-11" aria-label="Loading toggle" data-testid="skeleton-toggle" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Danger Zone Skeleton */}
+            <Card data-testid="skeleton-card" className="border-red-200 dark:border-red-900">
+              <CardHeader>
+                <SkeletonCard className="h-7 w-40" aria-label="Loading title" data-testid="skeleton-danger-title" />
+              </CardHeader>
+              <CardContent>
+                <SkeletonCard className="h-4 w-full max-w-[350px]" aria-label="Loading text" data-testid="skeleton-text" />
+                <div className="mt-4">
+                  <SkeletonCard className="h-9 w-32" aria-label="Loading danger button" data-testid="skeleton-danger-button" />
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle>Personal Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form id="profile-form" onSubmit={handleProfileSubmit}>
+                  <div className="grid gap-6">
+                    <div className="space-y-2">
+                      <label htmlFor="name" className="text-sm font-medium">
+                        Name
+                      </label>
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        aria-invalid={!!errors.name}
+                        aria-describedby={
+                          errors.name ? "name-error" : undefined
+                        }
+                        autoComplete="name"
+                        className={`w-full p-2 rounded-md border ${
+                          errors.name ? "border-red-500" : "border-gray-300"
+                        } focus:outline-none focus:ring-2 focus:ring-primary`}
+                      />
+                      {errors.name && <FormError message={errors.name} />}
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-sm font-medium">
+                        Email
+                      </label>
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        aria-invalid={!!errors.email}
+                        aria-describedby={
+                          errors.email ? "email-error" : undefined
+                        }
+                        autoComplete="email"
+                        className={`w-full p-2 rounded-md border ${
+                          errors.email ? "border-red-500" : "border-gray-300"
+                        } focus:outline-none focus:ring-2 focus:ring-primary`}
+                      />
+                      {errors.email && <FormError message={errors.email} />}
+                    </div>
+                  </div>
+                </form>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Button
+                  type="submit"
+                  form="profile-form"
+                  isLoading={isUpdating}
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? "Saving..." : "Save Changes"}
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* Security Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Security</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Update your password to keep your account secure.
+                </p>
+                <Button variant="outline" onClick={openModal}>
+                  Change Password
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Account Preferences */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Account Preferences</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Email Notifications</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Receive updates about new releases and recommendations
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        defaultChecked
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Dark Mode</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Toggle between light and dark theme
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Danger Zone */}
+            <Card className="border border-red-200 dark:border-red-900">
+              <CardHeader>
+                <CardTitle className="text-red-600 dark:text-red-400">
+                  Danger Zone
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  Once you delete your account, there is no going back. Please be
+                  certain.
+                </p>
+                <div className="mt-4">
+                  <Button 
+                    variant="danger"
+                    data-testid="delete-account-button"
+                    onClick={() => {
+                      // This would typically show a confirmation modal
+                      // For now we'll just have a placeholder
+                      showToast("Account deletion requires confirmation. Feature coming soon.", "error");
+                    }}
+                  >
+                    Delete Account
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {/* Change Password Modal */}
+        <Modal
+          isOpen={isOpen}
+          onClose={() => {
+            closeModal();
+            resetPasswordForm();
+          }}
+          title="Change Password"
+        >
+          <form onSubmit={handlePasswordSubmit} className="py-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="currentPassword"
+                  className="text-sm font-medium"
+                >
+                  Current Password
+                </label>
+                <input
+                  ref={currentPasswordRef}
+                  id="currentPassword"
+                  name="currentPassword"
+                  type="password"
+                  value={formData.currentPassword}
+                  onChange={handleInputChange}
+                  aria-invalid={!!errors.currentPassword}
+                  aria-describedby={
+                    errors.currentPassword ? "currentPassword-error" : undefined
+                  }
+                  autoComplete="current-password"
+                  className={`w-full p-2 rounded-md border ${
+                    errors.currentPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } focus:outline-none focus:ring-2 focus:ring-primary`}
+                />
+                {errors.currentPassword && (
+                  <FormError message={errors.currentPassword} />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="newPassword" className="text-sm font-medium">
+                  New Password
+                </label>
+                <input
+                  id="newPassword"
+                  name="newPassword"
+                  type="password"
+                  value={formData.newPassword}
+                  onChange={handleInputChange}
+                  aria-invalid={!!errors.newPassword}
+                  aria-describedby={
+                    errors.newPassword ? "newPassword-error" : undefined
+                  }
+                  autoComplete="new-password"
+                  className={`w-full p-2 rounded-md border ${
+                    errors.newPassword ? "border-red-500" : "border-gray-300"
+                  } focus:outline-none focus:ring-2 focus:ring-primary`}
+                />
+                {errors.newPassword && (
+                  <FormError message={errors.newPassword} />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium"
+                >
+                  Confirm New Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  aria-invalid={!!errors.confirmPassword}
+                  aria-describedby={
+                    errors.confirmPassword ? "confirmPassword-error" : undefined
+                  }
+                  autoComplete="new-password"
+                  className={`w-full p-2 rounded-md border ${
+                    errors.confirmPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } focus:outline-none focus:ring-2 focus:ring-primary`}
+                />
+                {errors.confirmPassword && (
+                  <FormError message={errors.confirmPassword} />
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  closeModal();
+                  resetPasswordForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                isLoading={isChangingPassword}
+                disabled={isChangingPassword}
+              >
+                {isChangingPassword ? "Updating..." : "Update Password"}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      </div>
+    </div>
+  );
+}

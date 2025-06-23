@@ -1,0 +1,25 @@
+{
+  "name": "movie-application",
+  "version": "1.0.0",
+  "description": "Fullstack Movie Application",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "build": "concurrently \"npm run build --prefix backend\" \"npm run build --prefix frontend\"",
+    "start": "concurrently \"npm run start --prefix backend\" \"npm run start --prefix frontend\"",
+    "test": "concurrently \"npm run test --prefix backend\" \"npm run test --prefix frontend\"",
+    "install-deps": "npm i && npm i --prefix frontend && npm i --prefix backend"
+  },
+  "keywords": [
+    "react",
+    "express",
+    "typescript",
+    "movies",
+    "fullstack"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
