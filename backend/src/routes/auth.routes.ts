@@ -15,8 +15,8 @@ const router = Router();
 router.post(
   '/register',
   authRateLimiter,
-  validate(registerSchema),
-  authController.register
+  validate({ body: registerSchema }),
+  authController.register,
 );
 
 /**
@@ -24,33 +24,21 @@ router.post(
  * @desc Login a user
  * @access Public
  */
-router.post(
-  '/login',
-  authRateLimiter,
-  validate(loginSchema),
-  authController.login
-);
+router.post('/login', authRateLimiter, validate({ body: loginSchema }), authController.login);
 
 /**
  * @route POST /api/auth/refresh
  * @desc Refresh access token using HttpOnly cookie
  * @access Public
  */
-router.post(
-  '/refresh',
-  authController.refreshToken
-);
+router.post('/refresh', authController.refreshToken);
 
 /**
  * @route GET /api/auth/me
  * @desc Get current user profile
  * @access Private
  */
-router.get(
-  '/me',
-  authenticate,
-  authController.getProfile
-);
+router.get('/me', authenticate, authController.getProfile);
 
 /**
  * @route PUT /api/auth/profile
@@ -60,8 +48,8 @@ router.get(
 router.put(
   '/profile',
   authenticate,
-  validate(updateProfileSchema),
-  authController.updateProfile
+  validate({ body: updateProfileSchema }),
+  authController.updateProfile,
 );
 
 /**
@@ -69,9 +57,6 @@ router.put(
  * @desc Logout user and clear refresh token cookie
  * @access Public
  */
-router.post(
-  '/logout',
-  authController.logout
-);
+router.post('/logout', authController.logout);
 
 export default router;

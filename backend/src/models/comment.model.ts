@@ -9,8 +9,8 @@ class CommentModel {
    * @returns True if movie exists, false otherwise
    */
   private async checkMovieExists(movieId: number): Promise<boolean> {
-    const result = await db.query('SELECT EXISTS(SELECT 1 FROM movies WHERE id = $1)', [movieId]);
-    return (result.rows[0] as { exists: boolean }).exists;
+    const result = await db.query<{ exists: boolean }>('SELECT EXISTS(SELECT 1 FROM movies WHERE id = $1)', [movieId]);
+    return result[0]?.exists || false;
   }
 
   /**
@@ -49,19 +49,19 @@ class CommentModel {
     }
 
     // Check if user already commented on this movie
-    const existingComment = await db.query('SELECT id FROM comments WHERE user_id = $1 AND movie_id = $2', [userId, movieId]);
-    if (existingComment.rowCount > 0) {
+    const existingComments = await db.query<{ id: number }>('SELECT id FROM comments WHERE user_id = $1 AND movie_id = $2', [userId, movieId]);
+    if (existingComments.length > 0) {
       throw new BadRequestException('You have already commented on this movie');
     }
 
-    const result = await db.query(
+    const result = await db.query<Comment>(
       `INSERT INTO comments (movie_id, user_id, content, rating)
        VALUES ($1, $2, $3, $4)
        RETURNING id, movie_id, user_id, content, rating, created_at, updated_at`,
       [movieId, userId, data.content, data.rating]
     );
 
-    return result.rows[0] as Comment;
+    return result[0];
   }
 
   /**
@@ -109,13 +109,12 @@ class CommentModel {
       ${whereClause}
     `;
     
-    const [dataResult, countResult] = await Promise.all([
-      db.query(dataQuery, queryParams),
-      db.query(countQuery, queryParams.slice(0, -2)) // Remove limit and offset params
+    const [comments, countResult] = await Promise.all([
+      db.query<CommentWithUser>(dataQuery, queryParams),
+      db.query<{ count: string }>(countQuery, queryParams.slice(0, -2)) // Remove limit and offset params
     ]);
     
-    const comments = dataResult.rows as CommentWithUser[];
-    const total = Number(countResult.rows[0].count);
+    const total = Number(countResult[0]?.count || 0);
     const pages = Math.ceil(total / limit);
     
     return {
@@ -135,7 +134,7 @@ class CommentModel {
    * @returns Comment with user information
    */
   async getCommentById(commentId: number): Promise<CommentWithUser | null> {
-    const result = await db.query(
+    const result = await db.query<CommentWithUser>(
       `SELECT c.*, u.name as user_name
        FROM comments c
        JOIN users u ON c.user_id = u.id
@@ -143,7 +142,7 @@ class CommentModel {
       [commentId]
     );
     
-    return result.rows[0] as CommentWithUser || null;
+    return result[0] || null;
   }
 
   /**
@@ -183,7 +182,7 @@ class CommentModel {
     updates.push(`updated_at = CURRENT_TIMESTAMP`);
     
     // Execute update
-    const result = await db.query(
+    const result = await db.query<Comment>(
       `UPDATE comments
        SET ${updates.join(', ')}
        WHERE id = $1
@@ -191,7 +190,7 @@ class CommentModel {
       queryParams
     );
     
-    return result.rows[0] as Comment;
+    return result[0];
   }
 
   /**
@@ -212,8 +211,8 @@ class CommentModel {
       throw new BadRequestException('You are not authorized to delete this comment');
     }
     
-    const result = await db.query('DELETE FROM comments WHERE id = $1', [commentId]);
-    return result.rowCount > 0;
+    const result = await db.query<{ id: number }>('DELETE FROM comments WHERE id = $1 RETURNING id', [commentId]);
+    return result.length > 0;
   }
 }
 

@@ -1,7 +1,7 @@
 import winston from 'winston';
 import path from 'path';
 import fs from 'fs';
-import config from '@config/index';
+import config from '.';
 
 // Ensure logs directory exists
 const logDir = path.join(process.cwd(), 'logs');
@@ -23,34 +23,36 @@ const logger = winston.createLogger({
     }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
-    winston.format.json()
+    winston.format.json(),
   ),
   defaultMeta: { service: 'movie-api' },
   transports: [
     // Write all logs with level 'error' and below to error.log
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: path.join(logDir, 'error.log'),
       level: 'error',
     }),
-    
+
     // Write all logs to combined.log
-    new winston.transports.File({ 
-      filename: path.join(logDir, 'combined.log') 
+    new winston.transports.File({
+      filename: path.join(logDir, 'combined.log'),
     }),
   ],
 });
 
 // If not in production, log to console with a more readable format
 if (config.nodeEnv !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.timestamp({
-        format: 'YYYY-MM-DD HH:mm:ss',
-      }),
-      logFormat
-    ),
-  }));
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.timestamp({
+          format: 'YYYY-MM-DD HH:mm:ss',
+        }),
+        logFormat,
+      ),
+    }),
+  );
 }
 
 export default logger;

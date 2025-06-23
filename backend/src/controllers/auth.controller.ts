@@ -47,11 +47,11 @@ export class AuthController {
     try {
       // Get refresh token from HttpOnly cookie instead of request body
       const refresh_token = req.cookies.refresh_token;
-      
+
       if (!refresh_token) {
         throw new Error('Refresh token not found');
       }
-      
+
       const tokens = await authService.refreshToken(refresh_token, res);
       successResponse(res, tokens, 'Token refreshed successfully');
     } catch (error) {
@@ -69,7 +69,7 @@ export class AuthController {
       if (!req.user?.id) {
         throw new Error('User not authenticated');
       }
-      
+
       const user = await authService.getUserProfile(req.user.id);
       successResponse(res, { user }, 'Profile fetched successfully');
     } catch (error) {
@@ -77,7 +77,7 @@ export class AuthController {
       next(error);
     }
   }
-  
+
   /**
    * Update user profile
    * @route PUT /api/auth/profile
@@ -87,7 +87,7 @@ export class AuthController {
       if (!req.user?.id) {
         throw new Error('User not authenticated');
       }
-      
+
       const profileData: UpdateProfileData = req.body;
       const updatedProfile = await authService.updateProfile(req.user.id, profileData);
       successResponse(res, { user: updatedProfile }, 'Profile updated successfully');
@@ -101,7 +101,7 @@ export class AuthController {
    * Logout user by clearing the refresh token cookie
    * @route POST /api/auth/logout
    */
-  async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async logout(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Clear refresh token cookie
       await authService.logout(res);

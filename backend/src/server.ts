@@ -1,5 +1,5 @@
 import http from 'http';
-import config from './config/index';
+import config from './config';
 import logger from './config/logger';
 import setupDatabase from './utils/setupDatabase';
 import app from './app';
@@ -7,15 +7,15 @@ import app from './app';
 // Normalize port
 const normalizePort = (val: string): number => {
   const port = parseInt(val, 10);
-  
+
   if (isNaN(port)) {
     return 5000; // Default port
   }
-  
+
   if (port >= 0) {
     return port;
   }
-  
+
   return 5000;
 };
 
@@ -51,7 +51,7 @@ function onError(error: NodeJS.ErrnoException): void {
 async function onListening(): Promise<void> {
   const addr = server.address();
   const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + (addr?.port || 'unknown');
-  
+
   try {
     // Setup database tables
     await setupDatabase();
