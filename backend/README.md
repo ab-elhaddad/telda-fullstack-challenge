@@ -94,8 +94,9 @@ Node.js Express backend API for the Movie Application with PostgreSQL database.
 | `POST` | `/api/auth/login` | Login user | Public |
 | `POST` | `/api/auth/refresh` | Refresh access token | Cookie Required |
 | `POST` | `/api/auth/logout` | Logout user | Auth Required |
-| `GET` | `/api/auth/profile` | Get user profile | Auth Required |
-| `PUT` | `/api/auth/profile` | Update user profile | Auth Required |
+| `GET` | `/api/auth/me` | Get user profile | Auth Required |
+| `PATCH` | `/api/auth/profile` | Update user profile (name, avatar) | Auth Required |
+| `PATCH` | `/api/auth/password` | Reset user password | Auth Required |
 
 ### Movies
 

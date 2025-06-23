@@ -93,11 +93,14 @@ docker-compose up
 ## Main Features
 
 ### Authentication System
-- Secure JWT-based authentication with access and refresh tokens
-- Refresh tokens stored in HttpOnly cookies for enhanced security
+- Secure JWT-based authentication using access and refresh tokens
+- Tokens stored exclusively in HttpOnly cookies for enhanced security
+- Automatic token refreshing and token rotation
 - Login via email or username
 - User registration with unique validation
-- Profile management with bio and profile picture URL
+- Separate endpoints for profile management and password reset
+- Profile updates for name and avatar URL
+- Secure password reset with current password verification
 - Password change with old password verification
 
 ### Movie Management
