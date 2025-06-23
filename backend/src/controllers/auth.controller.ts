@@ -40,27 +40,6 @@ export class AuthController {
   }
 
   /**
-   * Refresh access token
-   * @route POST /api/auth/refresh
-   */
-  async refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // Get refresh token from HttpOnly cookie instead of request body
-      const refresh_token = req.cookies.refresh_token;
-
-      if (!refresh_token) {
-        throw new Error('Refresh token not found');
-      }
-
-      const tokens = await authService.refreshToken(refresh_token, res);
-      successResponse(res, tokens, 'Token refreshed successfully');
-    } catch (error) {
-      logger.error('Error in AuthController.refreshToken:', error);
-      next(error);
-    }
-  }
-
-  /**
    * Get current user profile
    * @route GET /api/auth/me
    */
@@ -109,12 +88,16 @@ export class AuthController {
 
       const { oldPassword, newPassword } = req.body;
       await authService.resetPassword(req.user.id, oldPassword, newPassword);
-      
+
       // Clear authentication cookies after password reset
       res.clearCookie('access_token', { path: '/api/auth' });
       res.clearCookie('refresh_token', { path: '/api/auth' });
-      
-      successResponse(res, null, 'Password reset successfully. Please login again with your new password.');
+
+      successResponse(
+        res,
+        null,
+        'Password reset successfully. Please login again with your new password.',
+      );
     } catch (error) {
       logger.error('Error in AuthController.resetPassword:', error);
       next(error);

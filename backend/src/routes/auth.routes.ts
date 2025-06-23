@@ -32,13 +32,6 @@ router.post(
 router.post('/login', authRateLimiter, validate({ body: loginSchema }), authController.login);
 
 /**
- * @route POST /api/auth/refresh
- * @desc Refresh access token using HttpOnly cookie
- * @access Public
- */
-router.post('/refresh', authController.refreshToken);
-
-/**
  * @route GET /api/auth/me
  * @desc Get current user profile
  * @access Private
