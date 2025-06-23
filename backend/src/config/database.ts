@@ -8,7 +8,7 @@ const pool = new Pool({
   ssl: config.nodeEnv === 'production' ? { rejectUnauthorized: false } : undefined,
   max: 5, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
-  connectionTimeoutMillis: 5000, // How long to wait for a connection to become available
+  connectionTimeoutMillis: 10000, // 10 seconds
 });
 
 // Listen for errors on the pool
