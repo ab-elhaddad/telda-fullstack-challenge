@@ -36,6 +36,7 @@ interface MovieSeedOptions {
 export default class MovieSeeder {
   private tmdbApiKey: string;
   private tmdbBaseUrl = 'https://api.themoviedb.org/3';
+  private tmdbImageBaseUrl = 'https://image.tmdb.org/t/p/original';
   private genreMap: Record<number, string> = {};
 
   constructor(options: MovieSeedOptions) {
@@ -103,9 +104,9 @@ export default class MovieSeeder {
 
       const query = `
         INSERT INTO movies (
-          id, title, poster, 
-          release_year, genre, rating
-        ) VALUES ($1, $2, $3, $4, $5, $6)
+          id, title, overview, poster, 
+          release_year, genre, rating, total_views
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (id) DO UPDATE SET
           title = EXCLUDED.title,
           poster = EXCLUDED.poster,
@@ -118,11 +119,12 @@ export default class MovieSeeder {
       const values = [
         movie.id,
         movie.title,
-        // movie.overview,
-        'https://image.tmdb.org/t/p/original' + movie.poster_path,
+        movie.overview,
+        this.tmdbImageBaseUrl + movie.poster_path,
         new Date(movie.release_date).getFullYear(),
         genreNames,
         movie.vote_average,
+        movie.vote_count,
       ];
 
       await db.query(query, values);

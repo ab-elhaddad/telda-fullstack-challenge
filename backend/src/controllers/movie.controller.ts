@@ -17,32 +17,31 @@ export class MovieController {
       const queryParams: MovieQueryParams = {
         // General search term
         search: req.query.search as string,
-        
+
         // Specific field filters
         title: req.query.title as string,
-        director: req.query.director as string,
         genre: req.query.genre as string,
-        
+
         // Year filters
         year: req.query.year ? Number(req.query.year) : undefined,
         year_from: req.query.year_from ? Number(req.query.year_from) : undefined,
         year_to: req.query.year_to ? Number(req.query.year_to) : undefined,
-        
+
         // Rating filters
         min_rating: req.query.min_rating ? Number(req.query.min_rating) : undefined,
         max_rating: req.query.max_rating ? Number(req.query.max_rating) : undefined,
-        
+
         // Pagination
         page: req.query.page ? Number(req.query.page) : 1,
         limit: req.query.limit ? Number(req.query.limit) : 10,
-        
+
         // Sorting
-        sort_by: req.query.sort_by as string || 'created_at',
+        sort_by: (req.query.sort_by as string) || 'created_at',
         order: (req.query.order as 'ASC' | 'DESC') || 'DESC',
       };
 
       const { movies, total } = await movieService.getAllMovies(queryParams);
-      
+
       // Calculate pagination metadata
       const page = queryParams.page || 1;
       const limit = queryParams.limit || 10;

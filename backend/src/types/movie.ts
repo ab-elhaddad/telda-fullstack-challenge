@@ -3,7 +3,6 @@
  */
 export interface BaseMovie {
   title: string;
-  director?: string;
   release_year?: number;
   genre?: string;
   poster?: string;
@@ -37,17 +36,16 @@ export interface UpdateMovieDto extends Partial<BaseMovie> {
  * Movie query parameters
  */
 export interface MovieQueryParams {
-  search?: string;          // General search term across multiple fields
-  title?: string;           // Filter by title
-  director?: string;        // Filter by director
-  genre?: string;           // Filter by genre
-  year?: number;            // Exact year filter
-  year_from?: number;       // From year range
-  year_to?: number;         // To year range
-  min_rating?: number;      // Minimum rating filter
-  max_rating?: number;      // Maximum rating filter
-  page?: number;            // Page number for pagination
-  limit?: number;           // Results per page
-  sort_by?: string;         // Field to sort by
-  order?: 'ASC' | 'DESC';  // Sort direction
+  search?: string; // General search term across multiple fields
+  title?: string; // Filter by title
+  genre?: string; // Filter by genre
+  year?: number; // Exact year filter
+  year_from?: number; // From year range
+  year_to?: number; // To year range
+  min_rating?: number; // Minimum rating filter
+  max_rating?: number; // Maximum rating filter
+  page?: number; // Page number for pagination
+  limit?: number; // Results per page
+  sort_by?: string; // Field to sort by
+  order?: 'ASC' | 'DESC'; // Sort direction
 }
