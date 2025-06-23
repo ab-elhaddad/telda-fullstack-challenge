@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import authService from '@services/auth.service';
 import { successResponse, createdResponse } from '@utils/response';
-import { LoginCredentials, RegistrationData, UpdateProfileData } from '../types/auth';
+import { LoginCredentials, RegistrationData } from '../types/auth';
 import { UserRequest } from '../types/express';
 import logger from '@config/logger';
 
@@ -80,7 +80,7 @@ export class AuthController {
 
   /**
    * Update user profile
-   * @route PUT /api/auth/profile
+   * @route PATCH /api/auth/profile
    */
   async updateProfile(req: UserRequest, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -88,11 +88,35 @@ export class AuthController {
         throw new Error('User not authenticated');
       }
 
-      const profileData: UpdateProfileData = req.body;
+      const profileData = req.body;
       const updatedProfile = await authService.updateProfile(req.user.id, profileData);
       successResponse(res, { user: updatedProfile }, 'Profile updated successfully');
     } catch (error) {
       logger.error('Error in AuthController.updateProfile:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Reset password
+   * @route PATCH /api/auth/password
+   */
+  async resetPassword(req: UserRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user?.id) {
+        throw new Error('User not authenticated');
+      }
+
+      const { oldPassword, newPassword } = req.body;
+      await authService.resetPassword(req.user.id, oldPassword, newPassword);
+      
+      // Clear authentication cookies after password reset
+      res.clearCookie('access_token', { path: '/api/auth' });
+      res.clearCookie('refresh_token', { path: '/api/auth' });
+      
+      successResponse(res, null, 'Password reset successfully. Please login again with your new password.');
+    } catch (error) {
+      logger.error('Error in AuthController.resetPassword:', error);
       next(error);
     }
   }
@@ -103,7 +127,7 @@ export class AuthController {
    */
   async logout(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Clear refresh token cookie
+      // Clear refresh and access tokens cookies
       await authService.logout(res);
       successResponse(res, null, 'Logged out successfully');
     } catch (error) {

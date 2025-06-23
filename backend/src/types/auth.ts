@@ -20,7 +20,7 @@ export interface AuthTokens {
     email: string;
     name: string;
     role: string;
-    profilePictureUrl?: string;
+    avatarUrl?: string;
   };
 }
 
@@ -34,10 +34,9 @@ export interface RefreshTokenPayload extends UserPayload {
 /**
  * Login credentials
  */
-export interface LoginCredentials {
-  identifier: string; // Can be email or username
+export type LoginCredentials = {
   password: string;
-}
+} & ({ email: never; username: string } | { email: string; username: never });
 
 /**
  * Registration data
@@ -57,7 +56,7 @@ export interface UpdateProfileData {
   email?: string;
   name?: string;
   bio?: string;
-  profile_picture_url?: string;
+  avatarUrl?: string;
   oldPassword?: string;
   newPassword?: string;
 }

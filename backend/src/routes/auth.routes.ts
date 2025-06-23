@@ -2,7 +2,12 @@ import { Router } from 'express';
 import authController from '@controllers/auth.controller';
 import { authenticate } from '@middleware/auth.middleware';
 import validate from '@middleware/validation.middleware';
-import { registerSchema, loginSchema, updateProfileSchema } from '@schemas/auth.schema';
+import {
+  registerSchema,
+  loginSchema,
+  updateProfileSchema,
+  resetPasswordSchema,
+} from '@schemas/auth.schema';
 import { authRateLimiter } from '@middleware/rateLimit.middleware';
 
 const router = Router();
@@ -38,18 +43,30 @@ router.post('/refresh', authController.refreshToken);
  * @desc Get current user profile
  * @access Private
  */
-router.get('/me', authenticate, authController.getProfile);
+router.get('/me', authenticate(), authController.getProfile);
 
 /**
- * @route PUT /api/auth/profile
+ * @route PATCH /api/auth/profile
  * @desc Update user profile
  * @access Private
  */
-router.put(
+router.patch(
   '/profile',
-  authenticate,
+  authenticate(),
   validate({ body: updateProfileSchema }),
   authController.updateProfile,
+);
+
+/**
+ * @route PATCH /api/auth/password
+ * @desc Reset user password
+ * @access Private
+ */
+router.patch(
+  '/password',
+  authenticate(),
+  validate({ body: resetPasswordSchema }),
+  authController.resetPassword,
 );
 
 /**

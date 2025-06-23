@@ -50,9 +50,9 @@ const verifyRefreshToken = (token: string): RefreshTokenPayload => {
 };
 
 /**
- * Generate secure cookie options for refresh token
+ * Generate secure cookie options for token
  */
-const getRefreshTokenCookieOptions = (isProduction: boolean) => {
+const getTokenCookieOptions = (isProduction: boolean) => {
   return {
     httpOnly: true, // Prevents client-side JS from reading the cookie
     secure: isProduction, // HTTPS only in production
@@ -84,5 +84,5 @@ export default {
   verifyRefreshToken,
   hashPassword,
   comparePassword,
-  getRefreshTokenCookieOptions,
+  getTokenCookieOptions,
 };
