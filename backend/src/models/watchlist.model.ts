@@ -19,7 +19,7 @@ class WatchlistModel {
     const result = (await db.query('SELECT EXISTS(SELECT 1 FROM movies WHERE id = $1)', [
       movieId,
     ])) as any;
-    return result.rows[0].exists;
+    return result[0].exists;
   }
 
   /**
@@ -68,12 +68,13 @@ class WatchlistModel {
     }
 
     // Check if movie is already in user's watchlist
-    const existingItem = await db.query(
+    const existingItems = await db.query(
       'SELECT id FROM watchlist WHERE user_id = $1 AND movie_id = $2',
       [userId, data.movie_id],
     );
+    console.log({ existingItems });
 
-    if ((existingItem as any).rowCount > 0) {
+    if (existingItems.length > 0) {
       throw new BadRequestException('Movie is already in your watchlist');
     }
 
@@ -85,8 +86,9 @@ class WatchlistModel {
       'INSERT INTO watchlist (user_id, movie_id, status) VALUES ($1, $2, $3) RETURNING *',
       [userId, data.movie_id, status],
     )) as any;
+    console.log({ result });
 
-    return result.rows[0] as Watchlist;
+    return result[0] as Watchlist;
   }
 
   /**
@@ -117,7 +119,7 @@ class WatchlistModel {
       [data.status, userId, movieId],
     )) as any;
 
-    return result.rows[0] as Watchlist;
+    return result[0] as Watchlist;
   }
 
   /**
@@ -140,7 +142,7 @@ class WatchlistModel {
     // Start building the query
     let query = `
       SELECT w.id, w.user_id, w.movie_id, w.added_at, w.status,
-             m.title, m.director, m.release_year, m.genre, m.poster, m.rating
+             m.title, m.release_year, m.genre, m.poster, m.rating
       FROM watchlist w
       JOIN movies m ON w.movie_id = m.id
       WHERE w.user_id = $1
@@ -172,7 +174,7 @@ class WatchlistModel {
     query += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
     values.push(limit, offset);
 
-    const result = (await db.query(query, values)) as any;
+    const watchlist = await db.query<WatchlistWithMovie>(query, values);
 
     // Count total items with the same filters (except pagination)
     let countQuery = 'SELECT COUNT(*) FROM watchlist w WHERE w.user_id = $1';
@@ -183,10 +185,9 @@ class WatchlistModel {
       countValues.push(Number(countQuery));
     }
 
-    const countResult = (await db.query(countQuery, countValues)) as any;
+    const countResult = await db.query<{ count: string }>(countQuery, countValues);
 
-    const watchlist = (result as any).rows as WatchlistWithMovie[];
-    const total = Number((countResult.rows[0] as { count: string }).count);
+    const total = parseInt(countResult[0].count, 10);
     const pages = Math.ceil(total / limit);
 
     return {
@@ -211,7 +212,7 @@ class WatchlistModel {
       'SELECT EXISTS(SELECT 1 FROM watchlist WHERE user_id = $1 AND movie_id = $2)',
       [userId, movieId],
     )) as any;
-    return (result.rows[0] as { exists: boolean }).exists;
+    return (result[0] as { exists: boolean }).exists;
   }
 
   /**

@@ -17,9 +17,9 @@ class WatchlistController {
     try {
       const userId = req.user!.id;
       const data: AddToWatchlistDto = req.body;
-      
+
       const watchlistItem = await watchlistService.addToWatchlist(userId, data);
-      
+
       createdResponse(res, { watchlistItem }, 'Movie added to watchlist successfully');
     } catch (error) {
       next(error);
@@ -37,31 +37,14 @@ class WatchlistController {
       const params: WatchlistQueryParams = {
         page: req.query.page ? parseInt(req.query.page as string) : 1,
         limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
-        status: (status === 'to_watch' || status === 'watched') ? status : 'all',
-        sort_by: req.query.sort_by as string || 'added_at',
-        order: (req.query.order as string || 'DESC').toUpperCase() as 'ASC' | 'DESC'
+        status: status === 'to_watch' || status === 'watched' ? status : 'all',
+        sort_by: (req.query.sort_by as string) || 'added_at',
+        order: ((req.query.order as string) || 'DESC').toUpperCase() as 'ASC' | 'DESC',
       };
-      
-      const result = await watchlistService.getUserWatchlist(userId, params);
-      
-      successResponse(res, result, 'Watchlist retrieved successfully');
-    } catch (error) {
-      next(error);
-    }
-  }
 
-  /**
-   * Check if a movie is in user's watchlist
-   * @route GET /api/watchlist/check/:movieId
-   */
-  async checkMovieInWatchlist(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const userId = req.user!.id;
-      const movieId = parseInt(req.params.movieId);
-      
-      const result = await watchlistService.checkMovieInWatchlist(userId, movieId);
-      
-      successResponse(res, result, 'Watchlist status retrieved');
+      const result = await watchlistService.getUserWatchlist(userId, params);
+
+      successResponse(res, result, 'Watchlist retrieved successfully');
     } catch (error) {
       next(error);
     }
@@ -71,13 +54,17 @@ class WatchlistController {
    * Remove movie from watchlist
    * @route DELETE /api/watchlist/:movieId
    */
-  async removeFromWatchlist(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
+  async removeFromWatchlist(
+    req: ExtendedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const userId = req.user!.id;
       const movieId = parseInt(req.params.movieId);
-      
+
       await watchlistService.removeFromWatchlist(userId, movieId);
-      
+
       successResponse(res, {}, 'Movie removed from watchlist successfully');
     } catch (error) {
       next(error);
@@ -88,14 +75,18 @@ class WatchlistController {
    * Update watchlist item status
    * @route PATCH /api/watchlist/:movieId/status
    */
-  async updateWatchlistStatus(req: ExtendedRequest, res: Response, next: NextFunction): Promise<void> {
+  async updateWatchlistStatus(
+    req: ExtendedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const userId = req.user!.id;
       const movieId = parseInt(req.params.movieId);
       const data: UpdateWatchlistDto = req.body;
-      
+
       const updatedItem = await watchlistService.updateWatchlistStatus(userId, movieId, data);
-      
+
       successResponse(res, { watchlistItem: updatedItem }, 'Watchlist status updated successfully');
     } catch (error) {
       next(error);

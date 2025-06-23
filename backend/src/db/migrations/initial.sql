@@ -55,6 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_comments_user_id ON comments(user_id);
 -- Watchlist (optional - for user saved movies)
 CREATE TABLE IF NOT EXISTS watchlist (
   id SERIAL PRIMARY KEY,
+  status VARCHAR(20) NOT NULL DEFAULT 'to_watch',
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   movie_id INTEGER NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
   added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
