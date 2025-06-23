@@ -170,12 +170,12 @@ export class AuthService {
       res.clearCookie('refresh_token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        path: '/api/auth',
+        path: '/',
       });
       res.clearCookie('access_token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        path: '/api/auth',
+        path: '/',
       });
     } catch (error) {
       logger.error('Error in AuthService.logout:', error);

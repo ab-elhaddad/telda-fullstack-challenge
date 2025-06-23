@@ -58,7 +58,7 @@ const getTokenCookieOptions = (isProduction: boolean) => {
     secure: isProduction, // HTTPS only in production
     sameSite: 'lax' as const, // Protects against CSRF
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    path: '/api/auth', // Only available to auth routes
+    path: '/',
   };
 };
 
