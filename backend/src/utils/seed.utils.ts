@@ -5,11 +5,18 @@ import logger from '../config/logger';
 interface TMDBMovie {
   id: number;
   title: string;
+  original_title: string;
   overview: string;
   poster_path: string;
+  backdrop_path: string;
   release_date: string;
   genre_ids: number[];
   vote_average: number;
+  vote_count: number;
+  adult: boolean;
+  original_language: string;
+  popularity: number;
+  video: boolean;
 }
 
 interface TMDBGenre {
@@ -42,18 +49,18 @@ export default class MovieSeeder {
     try {
       const response = await axios.get(`${this.tmdbBaseUrl}/genre/movie/list`, {
         params: {
-          api_key: this.tmdbApiKey
-        }
+          api_key: this.tmdbApiKey,
+        },
       });
 
       const genres: TMDBGenre[] = response.data.genres;
-      
+
       // Create a map of genre IDs to names
       this.genreMap = genres.reduce((map, genre) => {
         map[genre.id] = genre.name;
         return map;
       }, {} as Record<number, string>);
-      
+
       logger.info(`Fetched ${genres.length} genres from TMDB`);
     } catch (error) {
       logger.error('Error fetching genres from TMDB:', error);
@@ -65,9 +72,7 @@ export default class MovieSeeder {
    * Convert genre IDs to genre names
    */
   private mapGenreIdsToNames(genreIds: number[]): string[] {
-    return genreIds
-      .map(id => this.genreMap[id])
-      .filter(name => !!name); // Filter out any undefined genres
+    return genreIds.map(id => this.genreMap[id]).filter(name => !!name); // Filter out any undefined genres
   }
 
   /**
@@ -78,10 +83,10 @@ export default class MovieSeeder {
       const response = await axios.get(`${this.tmdbBaseUrl}/movie/popular`, {
         params: {
           api_key: this.tmdbApiKey,
-          page
-        }
+          page,
+        },
       });
-      
+
       return response.data.results;
     } catch (error) {
       logger.error(`Error fetching popular movies from TMDB (page ${page}):`, error);
@@ -95,32 +100,31 @@ export default class MovieSeeder {
   private async saveMovie(movie: TMDBMovie): Promise<void> {
     try {
       const genreNames = this.mapGenreIdsToNames(movie.genre_ids);
-      
+
       const query = `
         INSERT INTO movies (
-          tmdb_id, title, overview, poster_path, 
-          release_date, genres, rating
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-        ON CONFLICT (tmdb_id) DO UPDATE SET
+          id, title, poster, 
+          release_year, genre, rating
+        ) VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT (id) DO UPDATE SET
           title = EXCLUDED.title,
-          overview = EXCLUDED.overview,
-          poster_path = EXCLUDED.poster_path,
-          release_date = EXCLUDED.release_date,
-          genres = EXCLUDED.genres,
+          poster = EXCLUDED.poster,
+          release_year = EXCLUDED.release_year,
+          genre = EXCLUDED.genre,
           rating = EXCLUDED.rating
         RETURNING id
       `;
-      
+
       const values = [
         movie.id,
         movie.title,
-        movie.overview,
-        movie.poster_path,
-        movie.release_date,
-        JSON.stringify(genreNames),
-        movie.vote_average
+        // movie.overview,
+        'https://image.tmdb.org/t/p/original' + movie.poster_path,
+        new Date(movie.release_date).getFullYear(),
+        genreNames,
+        movie.vote_average,
       ];
-      
+
       await db.query(query, values);
     } catch (error) {
       logger.error(`Error saving movie ${movie.title} to database:`, error);
@@ -133,13 +137,13 @@ export default class MovieSeeder {
    */
   private async checkMoviesTable(): Promise<boolean> {
     try {
-      const result = await db.query(`
+      const result = (await db.query(`
         SELECT EXISTS (
           SELECT FROM information_schema.tables 
           WHERE table_schema = 'public'
           AND table_name = 'movies'
         )
-      `) as any[];
+      `)) as any[];
       return (result[0] as any).exists;
     } catch (error) {
       logger.error('Error checking if movies table exists:', error);
@@ -161,23 +165,24 @@ export default class MovieSeeder {
 
       // Fetch genres first
       await this.fetchGenres();
-      
+
       let totalSaved = 0;
-      
+
       // Fetch and save multiple pages of popular movies
       for (let page = 1; page <= pages; page++) {
         const movies = await this.fetchPopularMovies(page);
+        console.log({ movies });
         logger.info(`Fetched ${movies.length} movies from TMDB (page ${page})`);
-        
+
         // Save each movie to database
         for (const movie of movies) {
           await this.saveMovie(movie);
           totalSaved++;
         }
-        
+
         logger.info(`Saved page ${page} (${movies.length} movies)`);
       }
-      
+
       logger.info(`Successfully seeded database with ${totalSaved} movies`);
     } catch (error) {
       logger.error('Error seeding movies:', error);

@@ -5,12 +5,10 @@ import logger from '@config/logger';
 // Create a connection pool
 const pool = new Pool({
   connectionString: config.databaseUrl,
-  ssl: config.nodeEnv === 'production' 
-    ? { rejectUnauthorized: false } 
-    : undefined,
-  max: 20, // Maximum number of clients in the pool
+  ssl: config.nodeEnv === 'production' ? { rejectUnauthorized: false } : undefined,
+  max: 5, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
-  connectionTimeoutMillis: 2000, // How long to wait for a connection to become available
+  connectionTimeoutMillis: 5000, // How long to wait for a connection to become available
 });
 
 // Listen for errors on the pool
@@ -37,14 +35,14 @@ const testConnection = async (): Promise<void> => {
 const query = async <T>(text: string, params?: any[]): Promise<T[]> => {
   const start = Date.now();
   let client: PoolClient | null = null;
-  
+
   try {
     client = await pool.connect();
     const result = await client.query(text, params);
     const duration = Date.now() - start;
-    
+
     logger.debug(`Executed query: ${text} - Duration: ${duration}ms - Rows: ${result.rowCount}`);
-    
+
     return result.rows as T[];
   } catch (error) {
     logger.error(`Error executing query: ${text}`, error);
@@ -57,13 +55,13 @@ const query = async <T>(text: string, params?: any[]): Promise<T[]> => {
 // Transaction function for executing multiple queries in a transaction
 const transaction = async <T>(callback: (client: PoolClient) => Promise<T>): Promise<T> => {
   let client: PoolClient | null = null;
-  
+
   try {
     client = await pool.connect();
     await client.query('BEGIN');
-    
+
     const result = await callback(client);
-    
+
     await client.query('COMMIT');
     return result;
   } catch (error) {
