@@ -17,6 +17,7 @@ movie-application/
 ## Technologies
 
 ### Frontend
+
 - React
 - TypeScript
 - React Router
@@ -24,6 +25,7 @@ movie-application/
 - Jest for testing
 
 ### Backend
+
 - Node.js
 - Express
 - PostgreSQL (Neon Postgres)
@@ -35,6 +37,7 @@ movie-application/
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js v16+ and npm/pnpm
 - PostgreSQL database (or Neon Postgres account)
 - Docker and Docker Compose (optional, for containerized setup)
@@ -42,35 +45,41 @@ movie-application/
 ### Installation
 
 1. Clone the repository
+
 ```bash
 git clone <repository-url>
 cd movie-application
 ```
 
 2. Install dependencies
+
 ```bash
 pnpm install
 ```
 
 3. Set up environment variables
+
 ```bash
 # Backend environment setup
 cp backend/.env.example backend/.env
 # Frontend environment setup (if needed)
 cp frontend/.env.example frontend/.env
 ```
+
 Then edit the `.env` files with your configuration.
 
 4. Initialize and seed the database (optional)
+
 ```bash
 cd backend
 pnpm run dev # This will create tables
 # To add sample data, you can run:
-pnpm run seed-movies # (Optional: Adds sample movie data)
+pnpm run seed-movies # (Optional: Adds sample movie data [Make sure to provide TMDB_API_KEY in the .env file])
 cd ..
 ```
 
 5. Start development servers
+
 ```bash
 pnpm run dev
 ```
@@ -93,6 +102,7 @@ docker-compose up
 ## Main Features
 
 ### Authentication System
+
 - Secure JWT-based authentication using access and refresh tokens
 - Tokens stored exclusively in HttpOnly cookies for enhanced security
 - Automatic token refreshing and token rotation
@@ -104,11 +114,13 @@ docker-compose up
 - Password change with old password verification
 
 ### Movie Management
+
 - Browse, search, and filter movies
 - Comment on movies
 - Personal watchlists
 
 ### File Upload
+
 - API endpoint for uploading profile images
 - Validation for image types and sizes
 - Blueprint for cloud storage integration
@@ -116,6 +128,7 @@ docker-compose up
 ## Project Documentation
 
 For more detailed information, see the READMEs in each directory:
+
 - [Backend README](./backend/README.md)
 
 ## Deployment
