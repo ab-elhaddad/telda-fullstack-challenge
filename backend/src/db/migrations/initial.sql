@@ -1,9 +1,11 @@
--- Initial database schema for Movie App
+-- Initial database schema
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  avatar_url VARCHAR(255),
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   role VARCHAR(20) NOT NULL DEFAULT 'user',
@@ -18,18 +20,18 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE TABLE IF NOT EXISTS movies (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
-  director VARCHAR(255),
+  overview TEXT,
   release_year INTEGER,
   genre VARCHAR(100),
   poster VARCHAR(500),
   rating DECIMAL(3,1),
+  total_views INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP
 );
 
 -- Create indexes for common search fields
 CREATE INDEX IF NOT EXISTS idx_movies_title ON movies(title);
-CREATE INDEX IF NOT EXISTS idx_movies_director ON movies(director);
 CREATE INDEX IF NOT EXISTS idx_movies_release_year ON movies(release_year);
 CREATE INDEX IF NOT EXISTS idx_movies_genre ON movies(genre);
 CREATE INDEX IF NOT EXISTS idx_movies_rating ON movies(rating);
