@@ -9,7 +9,7 @@ import { UserPayload, RefreshTokenPayload } from '../types/auth';
  */
 const generateAccessToken = (payload: UserPayload): string => {
   return jwt.sign(payload, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn,
+    expiresIn: '15m',
   });
 };
 
@@ -21,9 +21,9 @@ const generateRefreshToken = (payload: UserPayload): string => {
     ...payload,
     jti: uuidv4(), // Add JWT ID for potential blacklisting
   };
-  
+
   return jwt.sign(refreshPayload, config.jwtRefreshSecret, {
-    expiresIn: config.jwtRefreshExpiresIn,
+    expiresIn: '1d',
   });
 };
 
