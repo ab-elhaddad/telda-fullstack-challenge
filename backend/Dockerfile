@@ -1,5 +1,8 @@
-# Stage 1: Build stage
-FROM node:18-alpine AS builder
+# Development Dockerfile
+FROM node:22-alpine
+
+# Set NODE_ENV to development
+ENV NODE_ENV=development
 
 # Set working directory
 WORKDIR /app
@@ -10,36 +13,11 @@ RUN npm install -g pnpm
 # Copy package files
 COPY package.json pnpm-lock.yaml* ./
 
-# Install dependencies including development dependencies
+# Install dependencies 
 RUN pnpm install
 
 # Copy source code
 COPY . .
-
-# Build the application
-RUN pnpm run build
-
-# Stage 2: Production stage
-FROM node:18-alpine AS production
-
-# Set NODE_ENV from build arg or default to production
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
-
-# Set working directory
-WORKDIR /app
-
-# Install pnpm
-RUN npm install -g pnpm
-
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
-
-# Install only production dependencies
-RUN pnpm install --prod
-
-# Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
 
 # Create logs directory
 RUN mkdir -p logs
@@ -47,8 +25,5 @@ RUN mkdir -p logs
 # Expose API port
 EXPOSE 5000
 
-# Set user to node for security
-USER node
-
-# Start the server
-CMD ["node", "dist/server.js"]
+# Start the development server with hot-reloading
+CMD ["pnpm", "run", "dev"]

@@ -126,27 +126,6 @@ VALUES
 )
 ON CONFLICT DO NOTHING;
 
--- Add some comments
-INSERT INTO comments (movie_id, user_id, content, rating)
-SELECT 
-  m.id, 
-  u.id, 
-  'This is one of the best movies I have ever seen!', 
-  10
-FROM movies m, users u
-WHERE m.title = 'The Shawshank Redemption' AND u.email = 'user@example.com'
-ON CONFLICT DO NOTHING;
-
-INSERT INTO comments (movie_id, user_id, content, rating)
-SELECT 
-  m.id, 
-  u.id, 
-  'A masterpiece of storytelling and cinematography.', 
-  9
-FROM movies m, users u
-WHERE m.title = 'The Godfather' AND u.email = 'admin@example.com'
-ON CONFLICT DO NOTHING;
-
 -- Add items to watchlist
 INSERT INTO watchlist (user_id, movie_id)
 SELECT 
