@@ -3,6 +3,7 @@
 A complete fullstack application for browsing and managing movies.
 
 ## Usage Snippets
+
 ![image](https://github.com/user-attachments/assets/d754edbc-cfd6-4307-b098-1eeb7e05ccb9)
 ![image](https://github.com/user-attachments/assets/85542035-a231-4aed-a94c-ef978fa18aa3)
 ![image](https://github.com/user-attachments/assets/309250e5-a003-4857-bb8e-3e79015c9afc)
@@ -135,3 +136,4 @@ docker-compose up
 For more detailed information, see the READMEs in each directory:
 
 - [Backend README](./backend/README.md)
+- [Frontend README](./frontend/README.md)
