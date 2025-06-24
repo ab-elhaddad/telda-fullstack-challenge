@@ -78,6 +78,8 @@ export interface MovieListResponse {
     total: number;
     page: number;
     limit: number;
-    pages: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
   };
 }

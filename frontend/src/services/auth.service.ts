@@ -7,9 +7,15 @@ import {
   UpdateProfileData,
   UpdatePasswordData,
   User,
-  AuthTokens
+  AuthTokens,
 } from "@/types/auth";
 
+// Define API response structure
+interface ApiResponse<T> {
+  status: boolean;
+  message: string;
+  data: T;
+}
 
 // Create axios instance with base configuration
 const authApi: AxiosInstance = axios.create({
@@ -72,20 +78,22 @@ authApi.interceptors.response.use(
 
 // Auth service functions
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<AuthTokens> {
-    const response = await authApi.post<AuthTokens>(
-      "/auth/login",
-      credentials
-    );
-    return response.data;
+  async login(
+    credentials: LoginCredentials
+  ): Promise<AuthTokens & { user: User }> {
+    const response = await authApi.post<
+      ApiResponse<AuthTokens & { user: User }>
+    >("/auth/login", credentials);
+    return response.data.data; // Extract the data from the API response
   },
 
-  async register(userData: RegistrationData): Promise<AuthTokens> {
-    const response = await authApi.post<AuthTokens>(
-      "/auth/register",
-      userData
-    );
-    return response.data;
+  async register(
+    userData: RegistrationData
+  ): Promise<AuthTokens & { user: User }> {
+    const response = await authApi.post<
+      ApiResponse<AuthTokens & { user: User }>
+    >("/auth/register", userData);
+    return response.data.data; // Extract the data from the API response
   },
 
   async logout(): Promise<void> {
@@ -94,24 +102,24 @@ export const authService = {
   },
 
   async getCurrentUser(): Promise<User> {
-    const response = await authApi.get<User>("/auth/me");
-    return response.data;
+    const response = await authApi.get<ApiResponse<User>>("/auth/me");
+    return response.data.data; // Extract the user data from the API response
   },
 
-  async updateProfile(data: UpdateProfileData): Promise<{ user: User }> {
-    const response = await authApi.put<{ user: User }>(
+  async updateProfile(data: UpdateProfileData): Promise<User> {
+    const response = await authApi.put<ApiResponse<User>>(
       "/auth/profile",
       data
     );
-    return response.data;
+    return response.data.data; // Extract the user data from the API response
   },
 
   async changePassword(data: UpdatePasswordData): Promise<{ message: string }> {
-    const response = await authApi.put<{ message: string }>(
+    const response = await authApi.put<ApiResponse<{ success: boolean }>>(
       "/auth/password",
       data
     );
-    return response.data;
+    return { message: response.data.message };
   },
 };
 

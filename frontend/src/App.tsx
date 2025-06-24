@@ -3,11 +3,11 @@ import { Routes, Route } from "react-router-dom";
 
 import { MainLayout } from "@/components/layout/MainLayout";
 import { AuthHeader } from "@/components/layout/AuthHeader";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import QueryProvider from "@/providers/QueryProvider";
 import { ToastProvider } from "./components/ui/toast";
 import { useAuthStore } from "./stores/auth.store";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import ProtectedRoute from "./components/layout/ProtectedRoute";
 
 // Lazy-loaded pages
 const HomePage = lazy(() =>
@@ -72,49 +72,49 @@ function App() {
     <ThemeProvider>
       <QueryProvider>
         <ToastProvider>
-        <Suspense
-          fallback={
-            <div className="flex h-screen items-center justify-center bg-background">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-foreground font-medium">Loading...</p>
+          <Suspense
+            fallback={
+              <div className="flex h-screen items-center justify-center bg-background">
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-foreground font-medium">Loading...</p>
+                </div>
               </div>
-            </div>
-          }
-        >
-          <Layout>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/movies" element={<MoviesPage />} />
-              <Route path="/movies/:id" element={<MovieDetailsPage />} />
-              <Route path="/search" element={<MovieSearchPage />} />
+            }
+          >
+            <Layout>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/movies" element={<MoviesPage />} />
+                <Route path="/movies/:id" element={<MovieDetailsPage />} />
+                <Route path="/search" element={<MovieSearchPage />} />
 
-              {/* Protected routes */}
-              <Route
-                path="/watchlist"
-                element={
-                  <ProtectedRoute>
-                    <WatchlistPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Protected routes */}
+                <Route
+                  path="/watchlist"
+                  element={
+                    <ProtectedRoute>
+                      <WatchlistPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Layout>
-        </Suspense>
+                {/* Catch-all route */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Layout>
+          </Suspense>
         </ToastProvider>
       </QueryProvider>
     </ThemeProvider>

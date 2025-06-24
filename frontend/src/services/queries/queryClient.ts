@@ -1,5 +1,5 @@
-import { QueryClient } from '@tanstack/react-query';
-import { ApiError } from '@/services/api/apiClient';
+import { ApiError } from "@/types/api";
+import { QueryClient } from "@tanstack/react-query";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -11,10 +11,14 @@ const queryClient = new QueryClient({
       retry: (failureCount, error) => {
         // Don't retry on 404s or authentication errors
         const apiError = error as ApiError;
-        if (apiError.status === 404 || apiError.status === 401 || apiError.status === 403) {
+        if (
+          apiError.status === 404 ||
+          apiError.status === 401 ||
+          apiError.status === 403
+        ) {
           return false;
         }
-        
+
         // Retry up to 2 times on other errors
         return failureCount < 2;
       },
@@ -23,9 +27,9 @@ const queryClient = new QueryClient({
     mutations: {
       // Default mutation options
       retry: false, // Don't retry mutations by default
-      networkMode: 'always', // Always attempt network requests
-    }
-  }
+      networkMode: "always", // Always attempt network requests
+    },
+  },
 });
 
 export default queryClient;

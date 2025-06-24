@@ -1,5 +1,3 @@
-import { Movie } from "./movie";
-
 /**
  * Status options for watchlist items
  * Aligned with backend status options
@@ -13,20 +11,17 @@ export enum WatchlistItemStatus {
  * Watchlist item model
  * Aligned with backend Watchlist
  */
-export interface Watchlist {
+export interface WatchlistItem {
   id: number;
   user_id: number;
   movie_id: number;
   added_at: Date;
   status: WatchlistItemStatus;
-}
-
-/**
- * Watchlist item with movie details
- * Aligned with backend WatchlistWithMovie
- */
-export interface WatchlistWithMovie extends Watchlist {
-  movie: Movie;
+  title: string;
+  release_year: number;
+  genre: string;
+  poster: string;
+  rating: string;
 }
 
 /**
@@ -69,7 +64,7 @@ export interface CheckWatchlistResponse {
  * Aligned with backend WatchlistPaginated
  */
 export interface WatchlistPaginated {
-  watchlist: WatchlistWithMovie[]; // Changed from items to watchlist to match backend
+  watchlist: WatchlistItem[];
   pagination: {
     total: number;
     page: number;

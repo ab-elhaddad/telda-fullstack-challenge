@@ -2,19 +2,29 @@
  * Movie service for handling movie-related API requests
  */
 import apiService from "./api.service";
-import { Movie, MovieListResponse } from "../types/movie";
+import { Movie, MovieListResponse, MovieQueryParams } from "../types/movie";
 
 /**
  * Service for handling movie-related operations
  */
 class MovieService {
   /**
-   * Get popular movies
+   * Get movies with advanced filtering and sorting options
+   * @param params Query parameters for filtering, sorting and pagination
    */
-  async getMovies(page = 1, limit = 10) {
-    return apiService.get<MovieListResponse>("/movies", {
-      params: { page: page.toString(), limit: limit.toString() },
-    });
+  async getMovies(params: MovieQueryParams = {}) {
+    // Convert numeric parameters to strings for API compatibility
+    const queryParams = Object.entries(params).reduce<Record<string, string>>(
+      (result, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          result[key] = value.toString();
+        }
+        return result;
+      },
+      {}
+    );
+
+    return apiService.get<MovieListResponse>("/movies", { params: queryParams });
   }
 
   /**
@@ -25,15 +35,6 @@ class MovieService {
     const res = await apiService.get<{ movie: Movie }>(`/movies/${id}`);
     console.log({ res });
     return res;
-  }
-
-  /**
-   * Search for movies
-   */
-  async searchMovies(query: string, page = 1) {
-    return apiService.get<MovieListResponse>("/movies/search", {
-      params: { search: query, page: page.toString() },
-    });
   }
 
   /**

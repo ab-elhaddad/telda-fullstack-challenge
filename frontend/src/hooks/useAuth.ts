@@ -10,7 +10,6 @@ import {
   UpdateProfileData,
   UpdatePasswordData,
   User,
-  AuthTokens,
 } from "@/types/auth";
 
 /**
@@ -40,10 +39,10 @@ const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: (credentials: LoginCredentials) =>
       authService.login(credentials),
-    onSuccess: (data: AuthTokens) => {
+    onSuccess: (data) => {
       setAccessToken(data.accessToken);
-      // After successful login, fetch user data
-      return authService.getCurrentUser();
+      setUser(data.user);
+      return data.user;
     },
     onError: (error: any) => {
       const errorMessage =
@@ -71,8 +70,10 @@ const useAuth = () => {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: (userData: RegistrationData) => authService.register(userData),
-    onSuccess: (data: AuthTokens) => {
+    onSuccess: (data) => {
       setAccessToken(data.accessToken);
+      // Can optionally set user data here too since it's included in the response
+      setUser(data.user);
       navigate("/login?registered=true");
       return data;
     },
@@ -88,10 +89,10 @@ const useAuth = () => {
   // Profile update mutation
   const updateProfileMutation = useMutation({
     mutationFn: (data: UpdateProfileData) => authService.updateProfile(data),
-    onSuccess: (data: { user: User }) => {
-      setUser(data.user);
+    onSuccess: (userData: User) => {
+      setUser(userData);
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-      return data.user;
+      return userData;
     },
     onError: (error: any) => {
       const errorMessage =

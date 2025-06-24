@@ -34,8 +34,8 @@ class ApiService {
         "Content-Type": "application/json",
         ...options.headers,
       },
+      credentials: "include",
     });
-    console.log({ response });
 
     return this.handleResponse<T>(response);
   }
@@ -53,6 +53,7 @@ class ApiService {
         ...options.headers,
       },
       body: JSON.stringify(data),
+      credentials: "include",
     });
 
     return this.handleResponse<T>(response);
@@ -71,6 +72,26 @@ class ApiService {
         ...options.headers,
       },
       body: JSON.stringify(data),
+      credentials: "include",
+    });
+
+    return this.handleResponse<T>(response);
+  }
+
+  async patch<T>(
+    endpoint: string,
+    data: any,
+    options: ApiOptions = {}
+  ): Promise<ApiResponse<T>> {
+    const url = this.buildUrl(endpoint, options.params);
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+      body: JSON.stringify(data),
+      credentials: "include",
     });
 
     return this.handleResponse<T>(response);
@@ -87,6 +108,7 @@ class ApiService {
         "Content-Type": "application/json",
         ...options.headers,
       },
+      credentials: "include",
     });
 
     return this.handleResponse<T>(response);

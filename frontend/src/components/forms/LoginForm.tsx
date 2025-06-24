@@ -102,12 +102,6 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
             >
               Password
             </label>
-            <Link
-              to="/forgot-password"
-              className="text-sm text-primary-600 hover:underline"
-            >
-              Forgot password?
-            </Link>
           </div>
           <input
             {...form.register("password")}

@@ -1,8 +1,10 @@
-import { useState, ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, ReactNode } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/auth.store";
 import useAuth from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/utils/cn";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 interface AuthHeaderProps {
   children: ReactNode;
@@ -10,187 +12,341 @@ interface AuthHeaderProps {
 
 export function AuthHeader({ children }: AuthHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, isAuthenticated } = useAuthStore();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { user: data, isAuthenticated } = useAuthStore();
+  // @ts-ignore
+  const user = data?.user as User;
   const { logout } = useAuth();
   const navigate = useNavigate();
-  
+  const location = useLocation();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const handleLogout = async () => {
     await logout();
     navigate("/login");
   };
-  
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setIsMenuOpen(false);
+      setIsUserMenuOpen(false);
+    };
+
+    if (isMenuOpen || isUserMenuOpen) {
+      document.addEventListener("click", handleOutsideClick);
+      return () => document.removeEventListener("click", handleOutsideClick);
+    }
+  }, [isMenuOpen, isUserMenuOpen]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  // Toggle mobile menu
+  const toggleMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setIsMenuOpen((prev) => !prev);
+    setIsUserMenuOpen(false);
   };
-  
+
+  // Toggle user menu
+  const toggleUserMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setIsUserMenuOpen((prev) => !prev);
+    setIsMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-background border-b border-border py-4 px-6">
-        <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold">
-            Movie App
+      <header className="sticky top-0 z-40 w-full bg-gradient-to-b from-black via-black/80 to-transparent shadow-md">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 text-xl font-bold">
+            <span className="text-2xl font-extrabold tracking-tight text-primary">
+              M
+            </span>
+            <span className="hidden sm:inline text-white font-medium">
+              MovieHub
+            </span>
           </Link>
-          
-          <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="hover:text-primary">Home</Link>
-            <Link to="/movies" className="hover:text-primary">Movies</Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex md:items-center md:space-x-4 lg:space-x-6">
+            <NavLink to="/" isActive={location.pathname === "/"}>
+              Home
+            </NavLink>
+            <NavLink
+              to="/movies"
+              isActive={location.pathname.startsWith("/movies")}
+            >
+              Movies
+            </NavLink>
             {isAuthenticated ? (
               <>
-                <Link to="/watchlist" className="hover:text-primary">My Watchlist</Link>
-                <div className="relative ml-4">
-                  <button 
-                    onClick={toggleMenu}
-                    className="flex items-center gap-2 focus:outline-none"
+                <NavLink
+                  to="/watchlist"
+                  isActive={location.pathname === "/watchlist"}
+                >
+                  My Watchlist
+                </NavLink>
+
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    onClick={toggleUserMenu}
+                    className="flex items-center gap-2 text-white bg-transparent hover:bg-gray-800/60"
+                    aria-expanded={isUserMenuOpen}
+                    aria-haspopup="true"
+                    aria-label="User menu"
                   >
-                    <span className="font-medium">{user?.name}</span>
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
-                      {user?.name?.charAt(0).toUpperCase()}
-                    </div>
-                  </button>
-                  
-                  {isMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg z-10 overflow-hidden">
-                      <div className="py-1">
-                        <Link 
-                          to="/profile" 
-                          className="block px-4 py-2 text-sm hover:bg-accent"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Profile
-                        </Link>
-                        <Button 
-                          variant="danger" 
-                          size="sm" 
-                          className="w-full"
-                          onClick={() => {
-                            handleLogout();
-                            setIsMenuOpen(false);
-                          }}
-                        >
-                          <div className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            Sign out
-                          </div>
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                    <span className="max-w-[100px] truncate font-medium">
+                      {user?.username || "User"}
+                    </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={cn(
+                        "transition-transform",
+                        isUserMenuOpen ? "rotate-180" : ""
+                      )}
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </Button>
+
+                  {isUserMenuOpen && <UserMenu onLogout={handleLogout} />}
                 </div>
               </>
             ) : (
-              <div className="flex gap-3">
+              <>
                 <Link to="/login">
-                  <Button variant="ghost" size="sm">
-                    Sign in
+                  <Button variant="outline" size="sm">
+                    Login
                   </Button>
                 </Link>
-                <Link to="/register">
-                  <Button size="sm">
-                    Sign up
-                  </Button>
+                <Link to="/register" className="hidden sm:inline-flex">
+                  <Button size="sm">Sign Up</Button>
                 </Link>
-              </div>
+              </>
             )}
           </nav>
-          
-          {/* Mobile menu button */}
-          <button 
-            className="md:hidden p-2 rounded-md hover:bg-accent"
-            onClick={toggleMenu}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" x2="20" y1="12" y2="12"></line>
-              <line x1="4" x2="20" y1="6" y2="6"></line>
-              <line x1="4" x2="20" y1="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-4 border-t border-border">
-            <div className="container mx-auto py-4 space-y-3">
-              <Link 
-                to="/" 
-                className="block py-2 hover:text-primary"
-                onClick={() => setIsMenuOpen(false)}
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden">
+            <Button
+              variant="ghost"
+              onClick={toggleMenu}
+              className="-mr-2 p-2 text-white hover:bg-gray-800/60"
+            >
+              <span className="sr-only">Toggle menu</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={cn(isMenuOpen ? "hidden" : "block")}
               >
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={cn(isMenuOpen ? "block" : "hidden")}
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </Button>
+
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                onClick={toggleUserMenu}
+                className="flex items-center gap-2 text-white bg-transparent hover:bg-gray-800/60"
+                aria-expanded={isUserMenuOpen}
+                aria-label="User menu"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobile && isMenuOpen && (
+          <div className="absolute left-0 right-0 top-16 z-50 border-b border-gray-800 bg-black/95 p-4 shadow-lg">
+            <nav className="flex flex-col space-y-1">
+              <MobileNavLink to="/" isActive={location.pathname === "/"}>
                 Home
-              </Link>
-              <Link 
-                to="/movies" 
-                className="block py-2 hover:text-primary"
-                onClick={() => setIsMenuOpen(false)}
+              </MobileNavLink>
+              <MobileNavLink
+                to="/movies"
+                isActive={location.pathname.startsWith("/movies")}
               >
                 Movies
-              </Link>
-              {isAuthenticated ? (
-                <>
-                  <Link 
-                    to="/watchlist" 
-                    className="block py-2 hover:text-primary"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    My Watchlist
-                  </Link>
-                  <Link 
-                    to="/profile" 
-                    className="block py-2 hover:text-primary"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="flex items-center w-full text-left py-2 text-red-600 dark:text-red-400"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                <div className="space-y-3 pt-2">
-                  <Link 
-                    to="/login" 
-                    className="block" 
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Button variant="ghost" fullWidth>
-                      Sign in
-                    </Button>
-                  </Link>
-                  <Link 
-                    to="/register" 
-                    className="block" 
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Button fullWidth>
-                      Sign up
-                    </Button>
-                  </Link>
-                </div>
+              </MobileNavLink>
+
+              {isAuthenticated && (
+                <MobileNavLink
+                  to="/watchlist"
+                  isActive={location.pathname === "/watchlist"}
+                >
+                  My Watchlist
+                </MobileNavLink>
               )}
+
+              {!isAuthenticated && (
+                <>
+                  <MobileNavLink
+                    to="/login"
+                    isActive={location.pathname === "/login"}
+                  >
+                    Login
+                  </MobileNavLink>
+                  <MobileNavLink
+                    to="/register"
+                    isActive={location.pathname === "/register"}
+                  >
+                    Sign Up
+                  </MobileNavLink>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
+
+        {/* Mobile User Menu */}
+        {isMobile && isUserMenuOpen && isAuthenticated && (
+          <div className="absolute left-0 right-0 top-16 z-50 border-b border-gray-800 bg-black/95 p-4 shadow-lg">
+            <div className="flex flex-col gap-2">
+              <div className="mb-2 py-2">
+                <p className="font-medium">
+                  {user?.name || user?.username || "User"}
+                </p>
+                <p className="text-sm text-gray-500">{user?.email || ""}</p>
+              </div>
+
+              <Link
+                to="/profile"
+                className="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Profile
+              </Link>
+
+              <Button
+                size="sm"
+                onClick={handleLogout}
+                className="w-full justify-start bg-primary/90 hover:bg-primary text-white"
+              >
+                Sign out
+              </Button>
             </div>
           </div>
         )}
       </header>
-      
-      <main className="flex-grow container mx-auto py-8 px-6">
-        {children}
-      </main>
-      
-      <footer className="bg-background border-t border-border py-6 px-6">
-        <div className="container mx-auto text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Movie Application
-        </div>
-      </footer>
+
+      <main className="flex-grow container mx-auto py-8 px-6">{children}</main>
+    </div>
+  );
+}
+
+interface NavLinkProps {
+  to: string;
+  children: React.ReactNode;
+  isActive?: boolean;
+}
+
+function NavLink({ to, children, isActive }: NavLinkProps) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        "text-sm font-medium transition-colors hover:text-white",
+        isActive ? "text-white" : "text-gray-300"
+      )}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function MobileNavLink({ to, children, isActive }: NavLinkProps) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        "block w-full px-4 py-2 text-sm font-medium hover:bg-gray-800/60",
+        isActive ? "bg-gray-800/80 text-white" : "bg-transparent text-gray-300"
+      )}
+    >
+      {children}
+    </Link>
+  );
+}
+
+interface UserMenuProps {
+  onLogout: () => void;
+}
+
+function UserMenu({ onLogout }: UserMenuProps) {
+  return (
+    <div className="absolute right-0 top-full mt-2 w-48 rounded-md border border-gray-800 bg-black shadow-lg">
+      <div className="p-2">
+        <Link
+          to="/profile"
+          className="flex items-center rounded-md px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+        >
+          Profile
+        </Link>
+        <Link
+          to="/watchlist"
+          className="flex items-center rounded-md px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+        >
+          My Watchlist
+        </Link>
+        <button
+          onClick={onLogout}
+          className="flex w-full items-center rounded-md px-4 py-2 text-left text-sm text-primary hover:bg-gray-800 hover:text-primary/80 transition-colors"
+        >
+          Sign out
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,20 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth.store";
 import movieService from "@/services/movie.service";
-import { useModal } from "@/components/ui/modal";
-import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import watchlistService from "@/services/watchlist.service";
-import { WatchlistItemStatus } from "@/types/watchlist";
+import { Button } from "@/components/ui/button";
 
 export function MovieDetailsPage() {
   const { id: movieId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [selectedStatus, setSelectedStatus] = useState<WatchlistItemStatus>();
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
   const { isAuthenticated } = useAuthStore();
-  const { isOpen, openModal, closeModal } = useModal();
   const { showToast } = useToast();
 
   // Fetch movie details
@@ -27,18 +24,27 @@ export function MovieDetailsPage() {
     queryFn: () => movieService.getMovieById(movieId as string),
     enabled: movieId !== undefined,
   });
-  console.log({ movieResponse, isError });
+  
   // Safely access movie data from the API response structure
-  const movie = movieResponse?.data.movie;
-  console.log({ movie });
+  const movie = movieResponse?.data?.movie;
+
+  // Check if movie is in watchlist when component loads
+  useEffect(() => {
+    // Only check if user is authenticated and movie data is loaded
+    if (isAuthenticated && movie?.id) {
+      // If movie has in_watchlist property set from API
+      if (movie.in_watchlist !== undefined) {
+        setIsInWatchlist(movie.in_watchlist);
+      }
+    }
+  }, [isAuthenticated, movie]);
 
   // Add to watchlist mutation
   const { mutate: addToWatchlist, isPending: isAddingToWatchlist } =
     useMutation({
-      mutationFn: () =>
-        watchlistService.addToWatchlist(Number(movieId), selectedStatus),
+      mutationFn: () => watchlistService.addToWatchlist(Number(movieId)),
       onSuccess: () => {
-        closeModal();
+        setIsInWatchlist(true);
         showToast("Movie added to your watchlist!", "success");
       },
       onError: (error) => {
@@ -49,21 +55,20 @@ export function MovieDetailsPage() {
       },
     });
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedStatus(e.target.value as WatchlistItemStatus);
-  };
-
   const handleAddToWatchlist = () => {
     if (!isAuthenticated) {
       showToast("Please sign in to add movies to your watchlist", "info");
       navigate("/login");
       return;
     }
-
-    openModal();
-  };
-
-  const confirmAddToWatchlist = () => {
+    
+    // Don't add again if already in watchlist
+    if (isInWatchlist) {
+      showToast("This movie is already in your watchlist", "info");
+      return;
+    }
+    
+    // Directly add to watchlist without modal
     addToWatchlist();
   };
 
@@ -89,9 +94,11 @@ export function MovieDetailsPage() {
       <div className="container mx-auto py-10 px-4">
         <div className="bg-black/40 border border-gray-800 text-white px-6 py-8 rounded-lg shadow-lg">
           <p className="font-bold text-xl mb-2 text-primary">Unable to Load</p>
-          <p className="text-gray-300 mb-6">Failed to load movie details. Please try again later.</p>
+          <p className="text-gray-300 mb-6">
+            Failed to load movie details. Please try again later.
+          </p>
           <button
-            onClick={() => navigate("/")} 
+            onClick={() => navigate("/")}
             className="bg-primary text-white px-6 py-3 rounded-md hover:bg-primary hover:brightness-110 transition-all shadow-md hover:shadow-glow"
           >
             Back to Movies
@@ -105,7 +112,9 @@ export function MovieDetailsPage() {
     return (
       <div className="container mx-auto py-10 px-4">
         <div className="flex flex-col items-center justify-center py-16">
-          <p className="text-center text-xl text-gray-300 mb-6">Movie not found</p>
+          <p className="text-center text-xl text-gray-300 mb-6">
+            Movie not found
+          </p>
           <button
             onClick={() => navigate("/")}
             className="bg-primary text-white px-6 py-3 rounded-md hover:bg-primary hover:brightness-110 transition-all shadow-md hover:shadow-glow"
@@ -131,8 +140,9 @@ export function MovieDetailsPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/20"></div>
 
         {/* Back button with Netflix styling */}
-        <button
+        <Button
           onClick={() => navigate("/")}
+          variant="outline"
           className="absolute top-8 left-8 flex items-center text-white bg-black/30 hover:bg-black/50 px-4 py-2 rounded-md transition-colors"
         >
           <svg
@@ -148,11 +158,13 @@ export function MovieDetailsPage() {
             />
           </svg>
           Back to Movies
-        </button>
-        
+        </Button>
+
         {/* Netflix style title overlay */}
         <div className="absolute bottom-0 left-0 right-0 px-8 py-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-lg">{movie?.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-lg">
+            {movie?.title}
+          </h1>
         </div>
       </div>
 
@@ -166,24 +178,51 @@ export function MovieDetailsPage() {
           />
 
           {/* Add to Watchlist Button with Netflix styling */}
-          <button
+          <Button
+            variant={isInWatchlist ? "secondary" : "outline"}
             onClick={handleAddToWatchlist}
-            className="w-full mt-6 bg-primary hover:bg-primary hover:brightness-110 text-white font-semibold py-3 px-4 rounded-md flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-glow"
+            className={`w-full mt-6 ${isInWatchlist ? 'bg-green-600 hover:bg-green-700' : 'bg-primary hover:bg-primary hover:brightness-110'} text-white font-semibold py-3 px-4 rounded-md flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-glow`}
+            disabled={isAddingToWatchlist}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-2"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Add to Watchlist
-          </button>
+            {isAddingToWatchlist ? (
+              <>
+                <div className="animate-spin h-4 w-4 border-t-2 border-b-2 border-white rounded-full mr-2"></div>
+                Adding...
+              </>
+            ) : isInWatchlist ? (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Added to Watchlist
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Add to Watchlist
+              </>
+            )}
+          </Button>
         </div>
 
         {/* Details with Netflix styling */}
@@ -193,10 +232,12 @@ export function MovieDetailsPage() {
               {movie.rating ? Number(movie.rating).toFixed(1) : "N/A"}
             </div>
             {movie?.release_year && (
-              <span className="text-gray-400 font-medium">{movie.release_year}</span>
+              <span className="text-gray-400 font-medium">
+                {movie.release_year}
+              </span>
             )}
           </div>
-          
+
           {/* Genres - Netflix style badges */}
           <div className="mb-8">
             <div className="flex flex-wrap gap-2">
@@ -210,13 +251,21 @@ export function MovieDetailsPage() {
               )) || <span className="text-gray-500">No genres available</span>}
             </div>
           </div>
-          
+
           {/* Meta details */}
           <div className="mb-8">
-            <h2 className="text-2xl font-medium mb-3 text-white">About this movie</h2>
+            <h2 className="text-2xl font-medium mb-3 text-white">
+              About this movie
+            </h2>
             <div className="text-gray-300 space-y-2">
-              <p>A {movie?.genre?.split(", ")[0]} film released in {movie?.release_year}.</p>
-              <p>Rated {movie.rating ? Number(movie.rating).toFixed(1) : "N/A"} by {movie.total_views} viewers.</p>
+              <p>
+                A {movie?.genre?.split(", ")[0]} film released in{" "}
+                {movie?.release_year}.
+              </p>
+              <p>
+                Rated {movie.rating ? Number(movie.rating).toFixed(1) : "N/A"}{" "}
+                by {movie.total_views} viewers.
+              </p>
             </div>
           </div>
 
@@ -230,43 +279,7 @@ export function MovieDetailsPage() {
         </div>
       </div>
 
-      {/* Watchlist modal with Netflix styling */}
-      <Modal isOpen={isOpen} onClose={closeModal} title="Add to Watchlist">
-        <div className="py-4">
-          <label className="block mb-2 font-medium text-gray-200">Select status:</label>
-          <select
-            value={selectedStatus}
-            onChange={handleStatusChange}
-            className="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary mb-6"
-          >
-            <option value={WatchlistItemStatus.TO_WATCH}>Plan to Watch</option>
-            <option value={WatchlistItemStatus.WATCHED}>Watched</option>
-          </select>
-
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={closeModal}
-              className="px-5 py-2.5 border border-gray-700 bg-transparent text-gray-300 rounded-md hover:bg-gray-800 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={confirmAddToWatchlist}
-              className="px-5 py-2.5 bg-primary text-white rounded-md hover:bg-primary hover:brightness-110 transition-all flex items-center shadow-md hover:shadow-glow"
-              disabled={isAddingToWatchlist}
-            >
-              {isAddingToWatchlist ? (
-                <>
-                  <div className="animate-spin h-4 w-4 border-t-2 border-b-2 border-white rounded-full mr-2"></div>
-                  Adding...
-                </>
-              ) : (
-                "Add to Watchlist"
-              )}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      {/* No modal needed anymore */}
     </div>
   );
 }

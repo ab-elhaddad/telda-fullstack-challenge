@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/utils/cn';
+import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/utils/cn";
 
 interface PaginationProps {
   currentPage: number;
@@ -42,8 +42,8 @@ export function Pagination({
     if (!showLeftDots && showRightDots) {
       const leftItemCount = 3 + 2 * siblingCount;
       const leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
-      
-      return [...leftRange, '...', totalPages];
+
+      return [...leftRange, "...", totalPages];
     }
 
     // Case 3: Show dots on the left side only
@@ -53,8 +53,8 @@ export function Pagination({
         { length: rightItemCount },
         (_, i) => totalPages - rightItemCount + i + 1
       );
-      
-      return [1, '...', ...rightRange];
+
+      return [1, "...", ...rightRange];
     }
 
     // Case 4: Show dots on both sides
@@ -63,8 +63,8 @@ export function Pagination({
         { length: rightSiblingIndex - leftSiblingIndex + 1 },
         (_, i) => leftSiblingIndex + i
       );
-      
-      return [1, '...', ...middleRange, '...', totalPages];
+
+      return [1, "...", ...middleRange, "...", totalPages];
     }
 
     return [];
@@ -74,9 +74,9 @@ export function Pagination({
   const handlePageChange = (page: number) => {
     if (page !== currentPage && page > 0 && page <= totalPages) {
       onPageChange(page);
-      
+
       // Scroll to top on page change for better UX
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -87,7 +87,10 @@ export function Pagination({
   return (
     <nav
       aria-label="Pagination"
-      className={cn("flex flex-wrap items-center justify-center gap-1", className)}
+      className={cn(
+        "flex flex-wrap items-center justify-center gap-1",
+        className
+      )}
     >
       {/* Previous page button */}
       <Button
@@ -140,38 +143,39 @@ export function Pagination({
       </Button>
 
       {/* Page numbers */}
-      {showPageNumbers && paginationRange.map((pageNumber, index) => {
-        if (pageNumber === '...') {
+      {showPageNumbers &&
+        paginationRange.map((pageNumber, index) => {
+          if (pageNumber === "...") {
+            return (
+              <span
+                key={`ellipsis-${index}`}
+                className="flex h-9 w-9 items-center justify-center text-sm text-gray-500"
+              >
+                ...
+              </span>
+            );
+          }
+
+          const page = Number(pageNumber);
+          const isActive = page === currentPage;
+
           return (
-            <span
-              key={`ellipsis-${index}`}
-              className="flex h-9 w-9 items-center justify-center text-sm text-gray-500"
+            <Button
+              key={`page-${page}`}
+              variant={isActive ? "primary" : "outline"}
+              size="sm"
+              onClick={() => handlePageChange(page)}
+              aria-label={`Go to page ${page}`}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "h-9 w-9 rounded-md p-0",
+                isActive && "pointer-events-none"
+              )}
             >
-              ...
-            </span>
+              {page}
+            </Button>
           );
-        }
-
-        const page = Number(pageNumber);
-        const isActive = page === currentPage;
-
-        return (
-          <Button
-            key={`page-${page}`}
-            variant={isActive ? 'primary' : 'outline'}
-            size="sm"
-            onClick={() => handlePageChange(page)}
-            aria-label={`Go to page ${page}`}
-            aria-current={isActive ? 'page' : undefined}
-            className={cn(
-              "h-9 w-9 rounded-md p-0",
-              isActive && "pointer-events-none"
-            )}
-          >
-            {page}
-          </Button>
-        );
-      })}
+        })}
 
       {/* Next page button */}
       <Button

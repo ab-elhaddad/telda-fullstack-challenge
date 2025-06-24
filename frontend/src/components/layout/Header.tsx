@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useAuthStore } from '@/stores/auth.store';
-import { cn } from '@/utils/cn';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/stores/auth.store";
+import { cn } from "@/utils/cn";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 /**
  * Main application header with responsive navigation and user authentication controls
@@ -12,71 +12,78 @@ export default function Header() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const isMobile = useMediaQuery('(max-width: 768px)');
-  
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  
+
   // Close menus when clicking outside
   useEffect(() => {
     const handleOutsideClick = () => {
       setIsMenuOpen(false);
       setIsUserMenuOpen(false);
     };
-    
+
     if (isMenuOpen || isUserMenuOpen) {
-      document.addEventListener('click', handleOutsideClick);
-      return () => document.removeEventListener('click', handleOutsideClick);
+      document.addEventListener("click", handleOutsideClick);
+      return () => document.removeEventListener("click", handleOutsideClick);
     }
   }, [isMenuOpen, isUserMenuOpen]);
-  
+
   // Close mobile menu on route change
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
-  
+
   // Handle logout
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
-  
+
   // Toggle mobile menu
   const toggleMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setIsMenuOpen(prev => !prev);
+    setIsMenuOpen((prev) => !prev);
     setIsUserMenuOpen(false);
   };
-  
+
   // Toggle user menu
   const toggleUserMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setIsUserMenuOpen(prev => !prev);
+    setIsUserMenuOpen((prev) => !prev);
     setIsMenuOpen(false);
   };
-  
+
   return (
     <header className="sticky top-0 z-40 w-full bg-gradient-to-b from-black via-black/80 to-transparent shadow-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 text-xl font-bold">
-          <span className="text-2xl font-extrabold tracking-tight text-primary">M</span>
-          <span className="hidden sm:inline text-white font-medium">MovieHub</span>
+          <span className="text-2xl font-extrabold tracking-tight text-primary">
+            M
+          </span>
+          <span className="hidden sm:inline text-white font-medium">
+            MovieHub
+          </span>
         </Link>
-        
+
         {/* Desktop Navigation */}
         <nav className="hidden md:flex md:items-center md:space-x-4 lg:space-x-6">
-          <NavLink to="/" isActive={location.pathname === '/'}>
+          <NavLink to="/" isActive={location.pathname === "/"}>
             Home
           </NavLink>
-          
+
           {isAuthenticated && (
-            <NavLink to="/watchlist" isActive={location.pathname === '/watchlist'}>
+            <NavLink
+              to="/watchlist"
+              isActive={location.pathname === "/watchlist"}
+            >
               My Watchlist
             </NavLink>
           )}
         </nav>
-        
+
         {/* Desktop Auth Actions */}
         <div className="hidden md:flex md:items-center md:space-x-4">
           {isAuthenticated ? (
@@ -90,7 +97,7 @@ export default function Header() {
                 aria-label="User menu"
               >
                 <span className="max-w-[100px] truncate font-medium">
-                  {user?.name || 'User'}
+                  {user?.name || "User"}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -110,15 +117,15 @@ export default function Header() {
                   <path d="m6 9 6 6 6-6" />
                 </svg>
               </Button>
-              
-              {isUserMenuOpen && (
-                <UserMenu onLogout={handleLogout} />
-              )}
+
+              {isUserMenuOpen && <UserMenu onLogout={handleLogout} />}
             </div>
           ) : (
             <>
               <Link to="/login">
-                <Button variant="outline" size="sm">Login</Button>
+                <Button variant="outline" size="sm">
+                  Login
+                </Button>
               </Link>
               <Link to="/register" className="hidden sm:inline-flex">
                 <Button size="sm">Sign Up</Button>
@@ -126,7 +133,7 @@ export default function Header() {
             </>
           )}
         </div>
-        
+
         {/* Mobile Menu Button */}
         <div className="flex md:hidden">
           <Button
@@ -167,7 +174,7 @@ export default function Header() {
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </Button>
-          
+
           {isAuthenticated && (
             <Button
               variant="ghost"
@@ -194,43 +201,60 @@ export default function Header() {
           )}
         </div>
       </div>
-      
+
       {/* Mobile Menu */}
       {isMobile && isMenuOpen && (
         <div className="absolute left-0 right-0 top-16 z-50 border-b border-gray-800 bg-black/95 p-4 shadow-lg">
           <nav className="flex flex-col space-y-1">
-            <MobileNavLink to="/" isActive={location.pathname === '/'}>Home</MobileNavLink>
-            
+            <MobileNavLink to="/" isActive={location.pathname === "/"}>
+              Home
+            </MobileNavLink>
+
             {isAuthenticated && (
-              <MobileNavLink to="/watchlist" isActive={location.pathname === '/watchlist'}>My Watchlist</MobileNavLink>
+              <MobileNavLink
+                to="/watchlist"
+                isActive={location.pathname === "/watchlist"}
+              >
+                My Watchlist
+              </MobileNavLink>
             )}
-            
+
             {!isAuthenticated && (
               <>
-                <MobileNavLink to="/login" isActive={location.pathname === '/login'}>Login</MobileNavLink>
-                <MobileNavLink to="/register" isActive={location.pathname === '/register'}>Sign Up</MobileNavLink>
+                <MobileNavLink
+                  to="/login"
+                  isActive={location.pathname === "/login"}
+                >
+                  Login
+                </MobileNavLink>
+                <MobileNavLink
+                  to="/register"
+                  isActive={location.pathname === "/register"}
+                >
+                  Sign Up
+                </MobileNavLink>
               </>
             )}
           </nav>
         </div>
       )}
-      
+
       {/* Mobile User Menu */}
       {isMobile && isUserMenuOpen && isAuthenticated && (
         <div className="absolute left-0 right-0 top-16 z-50 border-b border-gray-800 bg-black/95 p-4 shadow-lg">
           <div className="flex flex-col gap-2">
             <div className="mb-2 py-2">
-              <p className="font-medium">{user?.name || 'User'}</p>
-              <p className="text-sm text-gray-500">{user?.email || ''}</p>
+              <p className="font-medium">{user?.name || "User"}</p>
+              <p className="text-sm text-gray-500">{user?.email || ""}</p>
             </div>
-            
+
             <Link
               to="/profile"
               className="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Profile
             </Link>
-            
+
             <Button
               size="sm"
               onClick={handleLogout}

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Movie } from "@/types/movie";
 import { Card, CardContent, CardImage, CardTitle } from "@/components/ui/card";
 import { Modal, useModal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
-import { WatchlistItemStatus } from "@/types/watchlist";
+import { WatchlistItemStatus, WatchlistItem } from "@/types/watchlist";
 import watchlistService from "@/services/watchlist.service";
+import { Pagination } from "@/components/ui/pagination";
 
 // Map our WatchStatus to WatchlistItemStatus for API calls
 const mapWatchStatus = (status: WatchlistItemStatus): WatchlistItemStatus => {
@@ -20,17 +20,7 @@ const mapWatchStatus = (status: WatchlistItemStatus): WatchlistItemStatus => {
   }
 };
 
-// Our local WatchlistItem type for use in the component
-interface WatchlistItem {
-  id: number;
-  movie_id: number;
-  user_id: number;
-  status: WatchlistItemStatus;
-  added_at: string;
-  updated_at: string;
-  movie?: Movie;
-}
-
+const ITEMS_PER_PAGE = 12;
 export function WatchlistPage() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -39,6 +29,7 @@ export function WatchlistPage() {
   const [newStatus, setNewStatus] = useState<WatchlistItemStatus>(
     WatchlistItemStatus.TO_WATCH
   );
+  const [page, setPage] = useState(1);
 
   // Modal states
   const {
@@ -52,22 +43,44 @@ export function WatchlistPage() {
     closeModal: closeDeleteModal,
   } = useModal();
 
-  // Fetch watchlist with proper typing
+  // Fetch watchlist with proper typing and pagination
   const {
-    data: watchlistResponse,
+    data: responseData,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["watchlist"],
+    queryKey: ["watchlist", filter, page],
     queryFn: async () => {
       // Use the standardized API response pattern as described in the project's pattern
-      const response = await watchlistService.getWatchlist();
-      return response.data;
+      return watchlistService.getWatchlist({
+        page,
+        limit: ITEMS_PER_PAGE,
+        status: filter,
+      });
     },
   });
 
-  // Extract data from the API response using the standardized structure
-  const watchlist = watchlistResponse?.data || [];
+  // Extract data from the standardized API response structure
+  const data = responseData?.data;
+  const watchlist = data?.watchlist || [];
+  const pagination = data?.pagination || {
+    total: 0,
+    page: 1,
+    limit: ITEMS_PER_PAGE,
+    pages: 1,
+  };
+
+  // Handle page change from Pagination component
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // When filter changes, reset to first page
+  const handleFilterChange = (newFilter: WatchlistItemStatus | "all") => {
+    setFilter(newFilter);
+    setPage(1);
+  };
 
   // Update watchlist item status mutation
   const { mutate: updateStatus, isPending: isUpdating } = useMutation({
@@ -91,8 +104,8 @@ export function WatchlistPage() {
 
   // Remove from watchlist mutation
   const { mutate: removeFromWatchlist, isPending: isRemoving } = useMutation({
-    mutationFn: (itemId: number) =>
-      watchlistService.removeFromWatchlist(itemId),
+    mutationFn: (movieId: number) =>
+      watchlistService.removeFromWatchlist(movieId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["watchlist"] });
       showToast("Movie removed from watchlist", "success");
@@ -119,21 +132,18 @@ export function WatchlistPage() {
   // Confirm update status
   const confirmUpdateStatus = () => {
     if (selectedItem && newStatus) {
-      updateStatus({ itemId: selectedItem.id, status: newStatus });
+      updateStatus({ itemId: selectedItem.movie_id, status: newStatus });
     }
   };
 
   // Confirm remove from watchlist
   const confirmRemove = () => {
     if (selectedItem) {
-      removeFromWatchlist(selectedItem.id);
+      removeFromWatchlist(selectedItem.movie_id);
     }
   };
 
-  // Filter watchlist items
-  const filteredWatchlist = watchlist.filter(
-    (item: WatchlistItem) => filter === "all" || item.status === filter
-  );
+  // We're using server-side filtering now via the API query params
 
   // Get status badge color - Netflix style
   const getStatusBadgeClass = (status: WatchlistItemStatus) => {
@@ -162,7 +172,7 @@ export function WatchlistPage() {
       {/* Filter Controls - Netflix Style */}
       <div className="flex flex-wrap gap-2 mb-8">
         <button
-          onClick={() => setFilter("all")}
+          onClick={() => handleFilterChange("all")}
           className={`px-4 py-2 rounded-sm text-sm font-medium transition-colors ${
             filter === "all"
               ? "bg-primary text-white"
@@ -172,7 +182,7 @@ export function WatchlistPage() {
           All
         </button>
         <button
-          onClick={() => setFilter(WatchlistItemStatus.WATCHED)}
+          onClick={() => handleFilterChange(WatchlistItemStatus.WATCHED)}
           className={`px-4 py-2 rounded-sm text-sm font-medium transition-colors ${
             filter === WatchlistItemStatus.WATCHED
               ? "bg-primary text-white"
@@ -182,7 +192,7 @@ export function WatchlistPage() {
           Watched
         </button>
         <button
-          onClick={() => setFilter(WatchlistItemStatus.TO_WATCH)}
+          onClick={() => handleFilterChange(WatchlistItemStatus.TO_WATCH)}
           className={`px-4 py-2 rounded-sm text-sm font-medium transition-colors ${
             filter === WatchlistItemStatus.TO_WATCH
               ? "bg-primary text-white"
@@ -223,7 +233,7 @@ export function WatchlistPage() {
       )}
 
       {/* Empty state - Netflix Style */}
-      {!isLoading && !isError && filteredWatchlist.length === 0 && (
+      {!isLoading && !isError && watchlist.length === 0 && (
         <div className="text-center py-16 max-w-lg mx-auto">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -257,76 +267,101 @@ export function WatchlistPage() {
       )}
 
       {/* Watchlist grid with Netflix styling */}
-      {filteredWatchlist.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredWatchlist.map((item: WatchlistItem) => (
-            <Card
-              key={item.id}
-              className="h-full bg-gray-900/50 border border-gray-800/50 overflow-hidden hover:scale-[1.03] transition-all duration-300 hover:shadow-xl rounded-md"
-            >
-              <div className="relative group">
-                <CardImage
-                  src={item.movie?.poster || "/placeholder-poster.jpg"}
-                  alt={item.movie?.title || "Movie poster"}
-                  className="aspect-[2/3] object-cover w-full transition-all duration-300 group-hover:brightness-75"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                  <div className="flex gap-2 mb-2">
-                    <Link
-                      to={`/movie/${item.movie_id}`}
-                      className="flex-1 px-3 py-2 text-sm bg-primary text-white rounded-sm hover:brightness-110 transition-all text-center"
-                    >
-                      View
-                    </Link>
-                    <button
-                      onClick={() => handleEditClick(item)}
-                      className="flex-1 px-3 py-2 text-sm bg-gray-700 text-gray-100 hover:bg-gray-600 transition-colors rounded-sm"
-                    >
-                      Edit
-                    </button>
+      {watchlist.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {watchlist.map((item: WatchlistItem) => (
+              <Card
+                key={item.id}
+                className="h-full bg-gray-900/50 border border-gray-800/50 overflow-hidden hover:scale-[1.03] transition-all duration-300 hover:shadow-xl rounded-md"
+              >
+                <div className="relative group">
+                  <CardImage
+                    src={item?.poster || "/placeholder-poster.jpg"}
+                    alt={item?.title || "Movie poster"}
+                    className="aspect-[2/3] object-cover w-full transition-all duration-300 group-hover:brightness-75"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                    <div className="flex gap-2 mb-2">
+                      <Link
+                        to={`/movie/${item.movie_id}`}
+                        className="flex-1 px-3 py-2 text-sm bg-primary text-white rounded-sm hover:brightness-110 transition-all text-center"
+                      >
+                        View
+                      </Link>
+                      <button
+                        onClick={() => handleEditClick(item)}
+                        className="flex-1 px-3 py-2 text-sm bg-gray-700 text-gray-100 hover:bg-gray-600 transition-colors rounded-sm"
+                      >
+                        Edit
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span
-                    className={`px-2 py-0.5 text-xs font-medium rounded-sm ${getStatusBadgeClass(item.status)}`}
-                  >
-                    {formatStatus(item.status)}
-                  </span>
-                  <button
-                    onClick={() => handleDeleteClick(item)}
-                    className="text-gray-400 hover:text-primary transition-colors"
-                    title="Remove from watchlist"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span
+                      className={`px-2 py-0.5 text-xs font-medium rounded-sm ${getStatusBadgeClass(item.status)}`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                      {formatStatus(item.status)}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteClick(item)}
+                      className="text-gray-400 hover:text-primary transition-colors"
+                      title="Remove from watchlist"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
 
-                <CardTitle className="mb-2 line-clamp-1 text-white">
-                  {item.movie?.title || "Unknown Title"}
-                </CardTitle>
+                  <CardTitle className="mb-2 line-clamp-1 text-white">
+                    {item?.title || "Unknown Title"}
+                  </CardTitle>
 
-                <span className="text-xs text-gray-500 block mt-1">
-                  Added {new Date(item.added_at).toLocaleDateString()}
-                </span>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <span className="text-xs text-gray-500 block mt-1">
+                    Added {new Date(item.added_at).toLocaleDateString()}
+                  </span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {!isLoading && !isError && pagination && (
+            <div className="mt-12">
+              <Pagination
+                currentPage={page}
+                totalPages={pagination.pages || 1}
+                onPageChange={handlePageChange}
+                showPageNumbers={true}
+                siblingCount={1}
+                className="my-8"
+              />
+              <div className="text-center text-sm text-gray-400 mt-2">
+                Showing{" "}
+                {pagination.total > 0
+                  ? (pagination.page - 1) * pagination.limit + 1
+                  : 0}{" "}
+                -{" "}
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                of {pagination.total} items
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Edit Status Modal - Netflix Style */}
@@ -338,7 +373,7 @@ export function WatchlistPage() {
         <div className="py-4">
           <label className="block mb-2 font-medium text-gray-200">Movie:</label>
           <p className="mb-4 text-white text-lg font-medium">
-            {selectedItem?.movie?.title}
+            {selectedItem?.title}
           </p>
 
           <label className="block mb-2 font-medium text-gray-200">
@@ -389,8 +424,8 @@ export function WatchlistPage() {
         <div className="py-4">
           <p className="mb-6 text-gray-300">
             Are you sure you want to remove{" "}
-            <strong className="text-white">{selectedItem?.movie?.title}</strong>{" "}
-            from your watchlist?
+            <strong className="text-white">{selectedItem?.title}</strong> from
+            your watchlist?
           </p>
 
           <div className="flex justify-end gap-3">

@@ -3,12 +3,12 @@
  */
 import apiService from "./api.service";
 import {
-  WatchlistWithMovie,
   WatchlistItemStatus,
   AddToWatchlistDto,
   UpdateWatchlistDto,
   WatchlistPaginated,
   WatchlistQueryParams,
+  WatchlistItem,
 } from "../types/watchlist";
 
 /**
@@ -20,19 +20,16 @@ class WatchlistService {
    */
   async getWatchlist(params?: WatchlistQueryParams) {
     return apiService.get<WatchlistPaginated>("/watchlist", {
-      params: params as any, // Type cast needed for compatibility with the API service
+      params: params as any,
     });
   }
 
   /**
    * Add movie to watchlist
    */
-  async addToWatchlist(
-    movie_id: number,
-    status: WatchlistItemStatus = WatchlistItemStatus.TO_WATCH
-  ) {
-    const payload: AddToWatchlistDto = { movie_id, status };
-    return apiService.post<WatchlistWithMovie>("/watchlist", payload);
+  async addToWatchlist(movie_id: number) {
+    const payload: AddToWatchlistDto = { movie_id };
+    return apiService.post<WatchlistItem>("/watchlist", payload);
   }
 
   /**
@@ -40,7 +37,10 @@ class WatchlistService {
    */
   async updateWatchlistStatus(movieId: number, status: WatchlistItemStatus) {
     const payload: UpdateWatchlistDto = { status };
-    return apiService.put<WatchlistWithMovie>(`/watchlist/${movieId}`, payload);
+    return apiService.patch<WatchlistItem>(
+      `/watchlist/${movieId}/status`,
+      payload
+    );
   }
 
   /**
