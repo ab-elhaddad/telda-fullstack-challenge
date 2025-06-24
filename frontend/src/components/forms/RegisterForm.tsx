@@ -2,7 +2,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { useAuth } from "@/hooks/useAuth";
+import useAuth from "@/hooks/useAuth";
+import { RegistrationData } from "@/types/auth";
 import { useFormError } from "@/hooks/useFormError";
 import { Button } from "@/components/ui/button";
 import FormError from "@/components/ui/formError";
@@ -29,7 +30,7 @@ const registerSchema = z
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
-  const { register: registerUser, isLoading } = useAuth();
+  const { register, isLoading } = useAuth();
   const { apiError, setApiError, handleSubmit } = useFormError<RegisterFormValues>();
   
   const form = useForm<RegisterFormValues>({
@@ -44,7 +45,15 @@ export function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      await registerUser(data.name, data.email, data.password);
+      // Create registration data object to match backend expectations
+      const registrationData: RegistrationData = {
+        name: data.name,
+        email: data.email,
+        username: data.email, // Using email as username by default
+        password: data.password
+      };
+      
+      await register(registrationData);
     } catch (err) {
       if (err instanceof Error) {
         setApiError(err.message);

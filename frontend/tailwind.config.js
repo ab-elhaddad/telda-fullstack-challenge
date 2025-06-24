@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: 'class', // Force dark mode
   theme: {
     extend: {
       colors: {
@@ -47,6 +48,14 @@ export default {
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "fade-in": {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        "pulse-glow": {
+          "0%, 100%": { boxShadow: "0 0 5px rgba(229, 9, 20, 0.3)" },
+          "50%": { boxShadow: "0 0 20px rgba(229, 9, 20, 0.6)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },

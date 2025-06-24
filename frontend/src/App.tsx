@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import QueryProvider from "@/providers/QueryProvider";
 import { ToastProvider } from "./components/ui/toast";
 import { useAuthStore } from "./stores/auth.store";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 
 // Lazy-loaded pages
 const HomePage = lazy(() =>
@@ -68,12 +69,16 @@ function App() {
     : MainLayout;
 
   return (
-    <QueryProvider>
-      <ToastProvider>
+    <ThemeProvider>
+      <QueryProvider>
+        <ToastProvider>
         <Suspense
           fallback={
-            <div className="flex h-screen items-center justify-center">
-              Loading...
+            <div className="flex h-screen items-center justify-center bg-background">
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-foreground font-medium">Loading...</p>
+              </div>
             </div>
           }
         >
@@ -110,8 +115,9 @@ function App() {
             </Routes>
           </Layout>
         </Suspense>
-      </ToastProvider>
-    </QueryProvider>
+        </ToastProvider>
+      </QueryProvider>
+    </ThemeProvider>
   );
 }
 

@@ -76,8 +76,9 @@ export function MovieDetailsPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto py-10 px-4">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="flex flex-col justify-center items-center h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+          <p className="text-gray-400 font-medium">Loading movie details...</p>
         </div>
       </div>
     );
@@ -86,12 +87,12 @@ export function MovieDetailsPage() {
   if (isError) {
     return (
       <div className="container mx-auto py-10 px-4">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md">
-          <p className="font-bold">Error</p>
-          <p>Failed to load movie details. Please try again later.</p>
+        <div className="bg-black/40 border border-gray-800 text-white px-6 py-8 rounded-lg shadow-lg">
+          <p className="font-bold text-xl mb-2 text-primary">Unable to Load</p>
+          <p className="text-gray-300 mb-6">Failed to load movie details. Please try again later.</p>
           <button
-            onClick={() => navigate("/movies")}
-            className="mt-4 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
+            onClick={() => navigate("/")} 
+            className="bg-primary text-white px-6 py-3 rounded-md hover:bg-primary hover:brightness-110 transition-all shadow-md hover:shadow-glow"
           >
             Back to Movies
           </button>
@@ -103,38 +104,40 @@ export function MovieDetailsPage() {
   if (!movie) {
     return (
       <div className="container mx-auto py-10 px-4">
-        <p className="text-center">Movie not found</p>
-        <button
-          onClick={() => navigate("/movies")}
-          className="mt-4 block mx-auto bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
-        >
-          Back to Movies
-        </button>
+        <div className="flex flex-col items-center justify-center py-16">
+          <p className="text-center text-xl text-gray-300 mb-6">Movie not found</p>
+          <button
+            onClick={() => navigate("/")}
+            className="bg-primary text-white px-6 py-3 rounded-md hover:bg-primary hover:brightness-110 transition-all shadow-md hover:shadow-glow"
+          >
+            Back to Movies
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      {/* Backdrop Image */}
+    <div className="container mx-auto py-8 px-4 pb-16">
+      {/* Backdrop Image with Netflix-style fullwidth look */}
       <div
-        className="w-full h-96 bg-cover bg-center rounded-lg mb-8 relative"
+        className="w-full h-[50vh] md:h-[60vh] bg-cover bg-center mb-8 relative -mx-4 -mt-8"
         style={{
           backgroundImage: movie?.poster ? `url(${movie.poster})` : "none",
-          backgroundColor: movie?.poster ? "transparent" : "#1f2937",
+          backgroundColor: movie?.poster ? "transparent" : "#0f0f0f",
         }}
       >
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent rounded-lg"></div>
+        {/* Netflix-style gradient overlay with stronger fade to black */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/20"></div>
 
-        {/* Back button */}
+        {/* Back button with Netflix styling */}
         <button
-          onClick={() => navigate("/movies")}
-          className="absolute top-4 left-4 flex items-center text-white bg-black/50 hover:bg-black/70 px-3 py-2 rounded-md"
+          onClick={() => navigate("/")}
+          className="absolute top-8 left-8 flex items-center text-white bg-black/30 hover:bg-black/50 px-4 py-2 rounded-md transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-1"
+            className="h-5 w-5 mr-2"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -144,23 +147,28 @@ export function MovieDetailsPage() {
               clipRule="evenodd"
             />
           </svg>
-          Back
+          Back to Movies
         </button>
+        
+        {/* Netflix style title overlay */}
+        <div className="absolute bottom-0 left-0 right-0 px-8 py-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-lg">{movie?.title}</h1>
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Poster */}
+      <div className="flex flex-col md:flex-row gap-10 px-4">
+        {/* Poster with Netflix-style appearance */}
         <div className="w-full md:w-1/3 lg:w-1/4">
           <img
             src={movie?.poster ? movie.poster : "/placeholder-poster.jpg"}
             alt={movie?.title || "Movie poster"}
-            className="rounded-lg shadow-md w-full object-cover aspect-[2/3]"
+            className="rounded-md shadow-lg w-full object-cover aspect-[2/3] hover:shadow-xl transition-shadow duration-300 border border-gray-800/30"
           />
 
-          {/* Add to Watchlist Button */}
+          {/* Add to Watchlist Button with Netflix styling */}
           <button
             onClick={handleAddToWatchlist}
-            className="w-full mt-6 bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-4 rounded-md flex items-center justify-center"
+            className="w-full mt-6 bg-primary hover:bg-primary hover:brightness-110 text-white font-semibold py-3 px-4 rounded-md flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-glow"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -178,42 +186,37 @@ export function MovieDetailsPage() {
           </button>
         </div>
 
-        {/* Details */}
+        {/* Details with Netflix styling */}
         <div className="w-full md:w-2/3 lg:w-3/4">
-          <h1 className="text-4xl font-bold mb-2">{movie?.title}</h1>
-
-          {movie?.title && (
-            <p className="text-xl text-gray-500 italic mb-6">{movie.title}</p>
-          )}
-
-          {/* Meta details */}
-          <div className="flex flex-wrap gap-x-6 gap-y-2 mb-6 text-sm">
-            {movie?.release_year && (
-              <div>
-                <span className="font-semibold">Release Date:</span>{" "}
-                {movie.release_year}
-              </div>
-            )}
-
-            <div>
-              <span className="font-semibold">Rating:</span>{" "}
-              {movie.rating ? Number(movie.rating).toFixed(1) : "N/A"} (
-              {movie.total_views} votes)
+          <div className="flex items-center gap-3 mb-6">
+            <div className="px-2 py-1 bg-primary/80 text-white text-xs font-medium rounded">
+              {movie.rating ? Number(movie.rating).toFixed(1) : "N/A"}
             </div>
+            {movie?.release_year && (
+              <span className="text-gray-400 font-medium">{movie.release_year}</span>
+            )}
           </div>
-
-          {/* Genres */}
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Genres</h2>
+          
+          {/* Genres - Netflix style badges */}
+          <div className="mb-8">
             <div className="flex flex-wrap gap-2">
               {movie?.genre?.split(", ").map((genre) => (
                 <span
                   key={genre}
-                  className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full text-sm"
+                  className="bg-gray-800/70 text-gray-300 px-3 py-1 rounded-sm text-sm border border-gray-700/50"
                 >
                   {genre}
                 </span>
               )) || <span className="text-gray-500">No genres available</span>}
+            </div>
+          </div>
+          
+          {/* Meta details */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-medium mb-3 text-white">About this movie</h2>
+            <div className="text-gray-300 space-y-2">
+              <p>A {movie?.genre?.split(", ")[0]} film released in {movie?.release_year}.</p>
+              <p>Rated {movie.rating ? Number(movie.rating).toFixed(1) : "N/A"} by {movie.total_views} viewers.</p>
             </div>
           </div>
 
@@ -227,14 +230,14 @@ export function MovieDetailsPage() {
         </div>
       </div>
 
-      {/* Watchlist modal */}
+      {/* Watchlist modal with Netflix styling */}
       <Modal isOpen={isOpen} onClose={closeModal} title="Add to Watchlist">
         <div className="py-4">
-          <label className="block mb-2 font-medium">Select status:</label>
+          <label className="block mb-2 font-medium text-gray-200">Select status:</label>
           <select
             value={selectedStatus}
             onChange={handleStatusChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary mb-6"
+            className="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary mb-6"
           >
             <option value={WatchlistItemStatus.TO_WATCH}>Plan to Watch</option>
             <option value={WatchlistItemStatus.WATCHED}>Watched</option>
@@ -243,13 +246,13 @@ export function MovieDetailsPage() {
           <div className="flex justify-end gap-3">
             <button
               onClick={closeModal}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
+              className="px-5 py-2.5 border border-gray-700 bg-transparent text-gray-300 rounded-md hover:bg-gray-800 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={confirmAddToWatchlist}
-              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center"
+              className="px-5 py-2.5 bg-primary text-white rounded-md hover:bg-primary hover:brightness-110 transition-all flex items-center shadow-md hover:shadow-glow"
               disabled={isAddingToWatchlist}
             >
               {isAddingToWatchlist ? (

@@ -39,14 +39,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // Variant styles
+    // Variant styles - Netflix inspired
     const variantStyles: Record<ButtonVariant, string> = {
-      primary: 'bg-primary text-white hover:bg-primary/90 focus:ring-primary/30',
-      secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 focus:ring-gray-300 dark:focus:ring-gray-600',
-      outline: 'bg-transparent border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-gray-400',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-300',
-      ghost: 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-gray-400',
-      link: 'bg-transparent text-primary hover:underline p-0 h-auto focus:ring-primary/30'
+      primary: 'bg-primary text-white hover:bg-primary hover:brightness-110 hover:shadow-glow transition-all',
+      secondary: 'bg-gray-800 text-white hover:bg-gray-700 transition-colors',
+      outline: 'bg-transparent border border-gray-600 text-gray-300 hover:border-gray-400 hover:text-white transition-colors',
+      danger: 'bg-red-600 text-white hover:bg-red-700 hover:brightness-110 transition-all',
+      ghost: 'bg-transparent text-gray-300 hover:bg-gray-800/60 hover:text-white transition-colors',
+      link: 'bg-transparent text-primary hover:text-primary/80 hover:brightness-110 p-0 h-auto transition-colors'
     };
     
     // Size styles
@@ -75,12 +75,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         disabled={isDisabled}
         className={cn(
-          'relative inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+          'relative inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none',
           variantStyles[variant],
           sizeStyles[size],
           fullWidth ? 'w-full' : '',
           isDisabled ? 'opacity-60 cursor-not-allowed' : '',
-          variant !== 'link' ? 'shadow-sm' : '',
+          variant === 'primary' ? 'shadow-md hover:shadow-lg' : (variant !== 'link' ? 'shadow-sm' : ''),
           className
         )}
         {...props}

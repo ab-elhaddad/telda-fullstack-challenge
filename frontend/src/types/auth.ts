@@ -41,20 +41,13 @@ export interface AuthTokens {
 }
 
 /**
- * Refresh token payload with JWT ID for potential blacklisting
- * Aligned with backend RefreshTokenPayload
- */
-export interface RefreshTokenPayload extends UserPayload {
-  jti: string; // JWT ID for potential blacklisting
-}
-
-/**
  * Login credentials
  * Aligned with backend LoginCredentials
  */
 export type LoginCredentials = {
+  identifier: string;
   password: string;
-} & ({ email: never; username: string } | { email: string; username: never });
+};
 
 /**
  * Registration data
@@ -64,8 +57,8 @@ export interface RegistrationData {
   username: string;
   email: string;
   password: string;
+  confirmPassword: string;
   name: string;
-  // confirmPassword removed as it's not in the backend model
 }
 
 /**
