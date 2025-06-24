@@ -1,6 +1,3 @@
-/**
- * User payload for JWT access tokens
- */
 export interface UserPayload {
   id: string;
   email: string;
@@ -8,9 +5,6 @@ export interface UserPayload {
   role: string;
 }
 
-/**
- * Authentication tokens response
- */
 export interface AuthTokens {
   accessToken: string;
   expiresIn: string;
@@ -24,23 +18,11 @@ export interface AuthTokens {
   };
 }
 
-/**
- * Refresh token payload with JWT ID for potential blacklisting
- */
-export interface RefreshTokenPayload extends UserPayload {
-  jti: string; // JWT ID for potential blacklisting
-}
-
-/**
- * Login credentials
- */
 export type LoginCredentials = {
+  identifier: string;
   password: string;
-} & ({ email: never; username: string } | { email: string; username: never });
+};
 
-/**
- * Registration data
- */
 export interface RegistrationData {
   username: string;
   email: string;
@@ -48,15 +30,7 @@ export interface RegistrationData {
   name: string;
 }
 
-/**
- * Profile update data
- */
 export interface UpdateProfileData {
-  username?: string;
-  email?: string;
   name?: string;
-  bio?: string;
   avatarUrl?: string;
-  oldPassword?: string;
-  newPassword?: string;
 }

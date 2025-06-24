@@ -56,7 +56,7 @@ export class AuthService {
   async login(credentials: LoginCredentials, res: Response): Promise<AuthTokens> {
     try {
       // Find user by identifier (email or username)
-      const user = await UserModel.findByIdentifier(credentials.email || credentials.username);
+      const user = await UserModel.findByIdentifier(credentials.identifier);
 
       if (!user) {
         throw new UnauthorizedException('Invalid credentials');

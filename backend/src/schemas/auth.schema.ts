@@ -49,33 +49,16 @@ export const registerSchema = Joi.object({
  * Schema for validating login credentials
  */
 export const loginSchema = Joi.object({
-  // Define email as optional initially
-  email: Joi.string().email().lowercase().trim().messages({
-    'string.email': 'Please enter a valid email address',
+  identifier: Joi.string().required().messages({
+    'string.empty': 'Identifier is required',
+    'any.required': 'Identifier is required',
   }),
-
-  // Define username as optional initially
-  username: Joi.string()
-    .alphanum()
-    .min(3)
-    .max(30)
-    .trim() // Example username validation
-    .messages({
-      'string.alphanum': 'Username must only contain alphanumeric characters',
-      'string.min': 'Username must be at least 3 characters long',
-      'string.max': 'Username cannot exceed 30 characters',
-    }),
 
   password: Joi.string().required().messages({
     'string.empty': 'Password is required',
     'any.required': 'Password is required',
   }),
-})
-  .xor('email', 'username') // requires either email *or* username, but not both.
-  .messages({
-    'object.xor': 'Please provide either an email or a username, but not both.',
-    'object.missing': 'Please provide either an email or a username.', // Fallback if neither is provided
-  });
+});
 
 /**
  * Schema for validating refresh token

@@ -1,8 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
 import config from '@config/index';
-import { UserPayload, RefreshTokenPayload } from '../types/auth';
+import { UserPayload } from '../types/auth';
 
 /**
  * Generate access token for authentication
@@ -17,12 +16,7 @@ const generateAccessToken = (payload: UserPayload): string => {
  * Generate refresh token with JWT ID for potential blacklisting
  */
 const generateRefreshToken = (payload: UserPayload): string => {
-  const refreshPayload: RefreshTokenPayload = {
-    ...payload,
-    jti: uuidv4(), // Add JWT ID for potential blacklisting
-  };
-
-  return jwt.sign(refreshPayload, config.jwtRefreshSecret, {
+  return jwt.sign(payload, config.jwtRefreshSecret, {
     expiresIn: '1d',
   });
 };
@@ -41,9 +35,9 @@ const verifyToken = (token: string): UserPayload => {
 /**
  * Verify refresh token and return decoded data
  */
-const verifyRefreshToken = (token: string): RefreshTokenPayload => {
+const verifyRefreshToken = (token: string): UserPayload => {
   try {
-    return jwt.verify(token, config.jwtRefreshSecret) as RefreshTokenPayload;
+    return jwt.verify(token, config.jwtRefreshSecret) as UserPayload;
   } catch (error) {
     throw error;
   }
