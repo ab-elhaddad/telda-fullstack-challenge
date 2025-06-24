@@ -2,6 +2,15 @@
 
 A complete fullstack application for browsing and managing movies.
 
+## Usage Snippets
+![image](https://github.com/user-attachments/assets/d754edbc-cfd6-4307-b098-1eeb7e05ccb9)
+![image](https://github.com/user-attachments/assets/85542035-a231-4aed-a94c-ef978fa18aa3)
+![image](https://github.com/user-attachments/assets/309250e5-a003-4857-bb8e-3e79015c9afc)
+![image](https://github.com/user-attachments/assets/c74342ed-711d-4a0e-af72-02b610705e41)
+![image](https://github.com/user-attachments/assets/1eb6981d-3706-4643-9b36-9e216ae34af8)
+![image](https://github.com/user-attachments/assets/9a29c557-5852-4d64-9cd4-c05b2e06f780)
+![image](https://github.com/user-attachments/assets/32998694-bfed-42fd-85af-e978972cc558)
+
 ## Project Structure
 
 ```
