@@ -51,25 +51,6 @@ authApi.interceptors.response.use(
       !(originalRequest as any)._retry
     ) {
       (originalRequest as any)._retry = true;
-
-      try {
-        // Attempt to refresh the token
-        const response = await authApi.post<{ accessToken: string }>(
-          "/auth/refresh-token"
-        );
-        const { accessToken } = response.data;
-
-        // Update the token in the store
-        useAuthStore.getState().setAccessToken(accessToken);
-
-        // Retry the original request
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        return axios(originalRequest);
-      } catch (refreshError) {
-        // If refresh fails, log out the user
-        useAuthStore.getState().logout();
-        return Promise.reject(refreshError);
-      }
     }
 
     return Promise.reject(error);
@@ -78,35 +59,31 @@ authApi.interceptors.response.use(
 
 // Auth service functions
 export const authService = {
-  async login(
-    credentials: LoginCredentials
-  ): Promise<AuthTokens & { user: User }> {
+  async login(credentials: LoginCredentials) {
     const response = await authApi.post<
       ApiResponse<AuthTokens & { user: User }>
     >("/auth/login", credentials);
     return response.data.data; // Extract the data from the API response
   },
 
-  async register(
-    userData: RegistrationData
-  ): Promise<AuthTokens & { user: User }> {
+  async register(userData: RegistrationData) {
     const response = await authApi.post<
       ApiResponse<AuthTokens & { user: User }>
     >("/auth/register", userData);
     return response.data.data; // Extract the data from the API response
   },
 
-  async logout(): Promise<void> {
+  async logout() {
     await authApi.post("/auth/logout");
     useAuthStore.getState().logout();
   },
 
-  async getCurrentUser(): Promise<User> {
+  async getCurrentUser() {
     const response = await authApi.get<ApiResponse<User>>("/auth/me");
     return response.data.data; // Extract the user data from the API response
   },
 
-  async updateProfile(data: UpdateProfileData): Promise<User> {
+  async updateProfile(data: UpdateProfileData) {
     const response = await authApi.put<ApiResponse<User>>(
       "/auth/profile",
       data
@@ -114,7 +91,7 @@ export const authService = {
     return response.data.data; // Extract the user data from the API response
   },
 
-  async changePassword(data: UpdatePasswordData): Promise<{ message: string }> {
+  async changePassword(data: UpdatePasswordData) {
     const response = await authApi.put<ApiResponse<{ success: boolean }>>(
       "/auth/password",
       data

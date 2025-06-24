@@ -72,7 +72,6 @@ const useAuth = () => {
     mutationFn: (userData: RegistrationData) => authService.register(userData),
     onSuccess: (data) => {
       setAccessToken(data.accessToken);
-      // Can optionally set user data here too since it's included in the response
       setUser(data.user);
       navigate("/login?registered=true");
       return data;
@@ -106,7 +105,6 @@ const useAuth = () => {
   const changePasswordMutation = useMutation({
     mutationFn: (data: UpdatePasswordData) => authService.changePassword(data),
     onSuccess: () => {
-      // Logout after password change as per backend requirements
       return logout();
     },
     onError: (error: any) => {

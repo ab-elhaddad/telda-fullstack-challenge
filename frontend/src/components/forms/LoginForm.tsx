@@ -1,9 +1,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LoginCredentials } from "@/types/auth";
+import { useEffect, useRef } from "react";
+import { useToast } from "../ui/toast";
 
 // Define form schema
 const loginSchema = z.object({
@@ -33,6 +35,18 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
+  const [searchParams] = useSearchParams();
+  const registered = searchParams.has("registered");
+
+  const { showToast } = useToast();
+  const registerRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (registered && !registerRef.current) {
+      registerRef.current = true;
+      showToast("Registration successful, you can now log in", "success");
+    }
+  }, [registered, showToast]);
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
