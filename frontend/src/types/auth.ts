@@ -5,6 +5,17 @@ export interface UserPayload {
   role: string;
 }
 
+export interface ProfileFormData {
+  name: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ProfileErrors {
+  [key: string]: string;
+}
+
 export interface User {
   id: string;
   name: string;
