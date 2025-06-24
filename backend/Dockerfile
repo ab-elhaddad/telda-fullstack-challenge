@@ -4,32 +4,39 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
 
 # Install dependencies including development dependencies
-RUN npm ci
+RUN pnpm install
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN pnpm run build
 
 # Stage 2: Production stage
 FROM node:18-alpine AS production
 
-# Set NODE_ENV to production
-ENV NODE_ENV=production
+# Set NODE_ENV from build arg or default to production
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
 
 # Install only production dependencies
-RUN npm ci --only=production
+RUN pnpm install --prod
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
