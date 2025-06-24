@@ -36,21 +36,6 @@ CREATE INDEX IF NOT EXISTS idx_movies_release_year ON movies(release_year);
 CREATE INDEX IF NOT EXISTS idx_movies_genre ON movies(genre);
 CREATE INDEX IF NOT EXISTS idx_movies_rating ON movies(rating);
 
--- Comments table (optional - for user reviews)
-CREATE TABLE IF NOT EXISTS comments (
-  id SERIAL PRIMARY KEY,
-  movie_id INTEGER NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  content TEXT NOT NULL,
-  rating INTEGER CHECK (rating >= 1 AND rating <= 10),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP,
-  CONSTRAINT unique_user_movie_comment UNIQUE(user_id, movie_id)
-);
-
--- Create indexes for comments
-CREATE INDEX IF NOT EXISTS idx_comments_movie_id ON comments(movie_id);
-CREATE INDEX IF NOT EXISTS idx_comments_user_id ON comments(user_id);
 
 -- Watchlist (optional - for user saved movies)
 CREATE TABLE IF NOT EXISTS watchlist (
