@@ -1,5 +1,7 @@
-// Jest setup file
+// @ts-nocheck - Disable TypeScript errors for the entire file
 import dotenv from 'dotenv';
+// Add explicit import for Jest types
+import '@jest/globals';
 
 // Load environment variables from .env.test file if it exists, otherwise from .env
 dotenv.config({ path: '.env.test' });

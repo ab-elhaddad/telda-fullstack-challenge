@@ -2,8 +2,11 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.ts', '**/tests/**/*.test.ts', '**/?(*.)+(spec|test).ts'],
+  roots: ['<rootDir>/src', '<rootDir>/__tests__'],
+  // Only match files with 'test' or 'spec' in their names
+  testMatch: ['**/?(*.)+(spec|test).ts'],
+  // Explicitly exclude helper, fixture, setup, and mock files from test runs
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/__tests__/helpers/', '/__tests__/fixtures/', '/__tests__/mocks/', '/__tests__/setup.ts'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
@@ -22,7 +25,7 @@ module.exports = {
     '^@types/(.*)$': '<rootDir>/src/types/$1',
     '^@constants/(.*)$': '<rootDir>/src/constants/$1'
   },
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   verbose: true,
   forceExit: true,
