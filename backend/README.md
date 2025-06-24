@@ -195,3 +195,85 @@ The application uses PostgreSQL with direct queries (no ORM). Main tables:
 - **Password Forget**: Implement password froget functionality
 - **Advanced Search**: Implement full-text search for movies
 - **Blacklist for JWT**: Implement token blacklisting for enhanced security
+
+## Architecture Diagrams
+
+### Request Flow Diagram
+
+```
+Client Request
+      |
+      v
++-------------+     +----------------+     +---------------+
+|   Express   |---->|  Middleware    |---->|  Router       |
+|   Server    |     |  - Auth        |     |  (routes/*.ts)|
++-------------+     |  - Validation  |     +---------------+
+      ^             |  - Error       |            |
+      |             +----------------+            v
+      |                                  +---------------+
+      |                                  |  Controller   |
+      |                                  |  (controllers)|
+      |                                  +---------------+
+      |                                         |
+      |                                         v
+      |                                  +---------------+
+      |                                  |   Service     |
+      |                                  |   (services)  |
+      |                                  +---------------+
+      |                                         |
+      |                                         v
+      |                                  +---------------+
+      |                                  |  Data Access  |
+      |                                  |   (models)    |
+      |                                  +---------------+
+      |                                         |
+      |                                         v
+      |                                  +---------------+
+      |                                  |   Database    |
+      |                                  |  (PostgreSQL) |
+      |                                  +---------------+
+      |                                         |
+      +-----------------------------------------+
+                  Response
+```
+
+### Data Flow Architecture
+
+```
++---------------------+          +----------------------+
+|                     |          |                      |
+|  Client Application | <------> |    REST API Server   |
+|    (React/TS)      |  HTTP/S  |     (Express/TS)     |
+|                     |          |                      |
++---------------------+          +----------------------+
+                                           |
+                                           | Query
+                                           v
+                               +------------------------+
+                               |                        |
+                               |  PostgreSQL Database   |
+                               |                        |
+                               +------------------------+
+```
+
+### Detailed Authentication Flow
+
+```
++--------+                               +------------+                              +-----------+
+|        | 1. Login (username/password) |            | 2. Verify credentials        |           |
+| Client | ------------------------------> Auth       | -------------------------->  | Database  |
+|        |                               | Controller |                              |           |
+|        | <------------------------------ |            | <--------------------------- |           |
++--------+ 4. Return tokens in           +------------+ 3. Generate JWT tokens       +-----------+
+           HttpOnly cookies                  |            & refresh token
+              |                              |
+              |                              |
+              v                              v
+         +--------+                      +------------+
+         |        | 5. Access protected |            |
+         | Client | --------------------> Protected   |
+         |        |  with JWT token     | Routes      |
+         |        | <-------------------- |            |
+         +--------+ 6. Return protected +------------+
+                    resource
+```

@@ -31,7 +31,6 @@ movie-application/
 - React
 - TypeScript
 - React Router
-- CSS/SCSS
 - Jest for testing
 
 ### Backend
@@ -79,15 +78,19 @@ cp frontend/.env.example frontend/.env
 
 Then edit the `.env` files with your configuration.
 
-4. Initialize and seed the database (optional)
+4. Initialize and seed the database
 
 ```bash
+# Start the backend to automatically create database tables
 cd backend
-pnpm run dev # This will create tables
-# To add sample data, you can run:
-pnpm run seed-movies # (Optional: Adds sample movie data [Make sure to provide TMDB_API_KEY in the .env file])
-cd ..
+pnpm run dev
+
+# In another terminal, seed the database with movies from TMDB API:
+cd backend
+pnpm run seed-movies
 ```
+
+> **Note**: The seeding process imports popular movies from The Movie Database (TMDB) API. Make sure you have added your `TMDB_API_KEY` to the backend `.env` file. This creates a rich dataset with movie titles, directors, release years, ratings, and poster images.
 
 5. Start development servers
 
