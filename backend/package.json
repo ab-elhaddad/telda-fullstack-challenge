@@ -12,7 +12,6 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write 'src/**/*.{ts,js,json}'",
-    "prepare": "cd .. && husky install backend/.husky",
     "seed-movies": "ts-node -r tsconfig-paths/register src/scripts/seed-movies.ts"
   },
   "keywords": [

@@ -23,38 +23,6 @@ class WatchlistModel {
   }
 
   /**
-   * Create watchlist table
-   */
-  async setupTable(): Promise<void> {
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS watchlist (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        movie_id INTEGER NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
-        status VARCHAR(10) NOT NULL DEFAULT 'to_watch' CHECK (status IN ('to_watch', 'watched')),
-        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT unique_user_movie_watchlist UNIQUE(user_id, movie_id)
-      );
-      
-      CREATE INDEX IF NOT EXISTS idx_watchlist_user_id ON watchlist(user_id);
-      CREATE INDEX IF NOT EXISTS idx_watchlist_movie_id ON watchlist(movie_id);
-      CREATE INDEX IF NOT EXISTS idx_watchlist_status ON watchlist(status);
-      
-      -- Add status column to existing watchlist table if it doesn't exist
-      DO $$
-      BEGIN
-          IF NOT EXISTS (
-              SELECT FROM information_schema.columns 
-              WHERE table_name = 'watchlist' AND column_name = 'status'
-          ) THEN
-              ALTER TABLE watchlist ADD COLUMN status VARCHAR(10) NOT NULL DEFAULT 'to_watch' CHECK (status IN ('to_watch', 'watched'));
-          END IF;
-      END
-      $$;
-    `);
-  }
-
-  /**
    * Add movie to watchlist
    * @param userId User ID
    * @param data Watchlist data containing movie ID

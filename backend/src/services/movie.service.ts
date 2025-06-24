@@ -1,5 +1,5 @@
 import MovieModel from '@models/movie.model';
-import { Movie, CreateMovieDto, UpdateMovieDto, MovieQueryParams } from '../types/movie';
+import { BaseMovie, Movie, MovieQueryParams } from '../types/movie';
 import { NotFoundException, BadRequestException } from '@utils/exceptions';
 import logger from '@config/logger';
 
@@ -25,11 +25,11 @@ export class MovieService {
   async getMovieById(id: string): Promise<Movie> {
     try {
       const movie = await MovieModel.findById(id);
-      
+
       if (!movie) {
         throw new NotFoundException('Movie');
       }
-      
+
       return movie;
     } catch (error) {
       logger.error(`Error in MovieService.getMovieById for id ${id}:`, error);
@@ -40,7 +40,7 @@ export class MovieService {
   /**
    * Create a new movie
    */
-  async createMovie(movieData: CreateMovieDto): Promise<Movie> {
+  async createMovie(movieData: BaseMovie): Promise<Movie> {
     try {
       // Additional validation or business logic can be implemented here
       return await MovieModel.create(movieData);
@@ -53,22 +53,22 @@ export class MovieService {
   /**
    * Update an existing movie
    */
-  async updateMovie(id: string, movieData: UpdateMovieDto): Promise<Movie> {
+  async updateMovie(id: string, movieData: BaseMovie): Promise<Movie> {
     try {
       // Verify movie exists
       const exists = await MovieModel.findById(id);
-      
+
       if (!exists) {
         throw new NotFoundException('Movie');
       }
-      
+
       // Update the movie
       const updatedMovie = await MovieModel.update(id, movieData);
-      
+
       if (!updatedMovie) {
         throw new BadRequestException('Failed to update movie');
       }
-      
+
       return updatedMovie;
     } catch (error) {
       logger.error(`Error in MovieService.updateMovie for id ${id}:`, error);
@@ -83,14 +83,14 @@ export class MovieService {
     try {
       // Verify movie exists
       const exists = await MovieModel.findById(id);
-      
+
       if (!exists) {
         throw new NotFoundException('Movie');
       }
-      
+
       // Delete the movie
       const deleted = await MovieModel.delete(id);
-      
+
       if (!deleted) {
         throw new BadRequestException('Failed to delete movie');
       }

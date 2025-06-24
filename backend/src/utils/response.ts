@@ -1,13 +1,10 @@
 import { Response } from 'express';
 
-/**
- * Standard success response format
- */
 export const successResponse = <T>(
   res: Response,
   data: T,
   message = 'Success',
-  statusCode = 200
+  statusCode = 200,
 ): Response => {
   return res.status(statusCode).json({
     status: true,
@@ -16,14 +13,11 @@ export const successResponse = <T>(
   });
 };
 
-/**
- * Error response format
- */
 export const errorResponse = (
   res: Response,
   message = 'An error occurred',
   statusCode = 500,
-  error?: any
+  error?: any,
 ): Response => {
   const response: { status: boolean; message: string; error?: any } = {
     status: false,
@@ -38,24 +32,15 @@ export const errorResponse = (
   return res.status(statusCode).json(response);
 };
 
-/**
- * Created response (201)
- */
 export const createdResponse = <T>(
   res: Response,
   data: T,
-  message = 'Resource created successfully'
+  message = 'Resource created successfully',
 ): Response => {
   return successResponse(res, data, message, 201);
 };
 
-/**
- * No content response (204)
- */
-export const noContentResponse = (
-  res: Response,
-  message = 'No content'
-): Response => {
+export const noContentResponse = (res: Response, message = 'No content'): Response => {
   return res.status(204).json({
     status: true,
     message,

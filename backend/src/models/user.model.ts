@@ -36,31 +36,6 @@ interface CreateUserDto {
  */
 export const UserModel = {
   /**
-   * Set up users table
-   */
-  async setupTable(): Promise<void> {
-    try {
-      const query = `
-        CREATE TABLE IF NOT EXISTS users (
-          id SERIAL PRIMARY KEY,
-          name VARCHAR(100) NOT NULL,
-          email VARCHAR(255) NOT NULL UNIQUE,
-          password VARCHAR(255) NOT NULL,
-          role VARCHAR(20) NOT NULL DEFAULT 'user',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP
-        )
-      `;
-
-      await db.query(query);
-      logger.info('Users table checked/created successfully');
-    } catch (error) {
-      logger.error('Error setting up users table:', error);
-      throw error;
-    }
-  },
-
-  /**
    * Find a user by email
    */
   async findByEmail(email: string): Promise<User | null> {

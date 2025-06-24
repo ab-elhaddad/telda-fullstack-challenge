@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import movieService from '@services/movie.service';
 import { successResponse, createdResponse } from '@utils/response';
-import { MovieQueryParams, CreateMovieDto, UpdateMovieDto } from '../types/movie';
+import { BaseMovie, MovieQueryParams } from '../types/movie';
 import logger from '@config/logger';
 
 /**
@@ -87,7 +87,7 @@ export class MovieController {
    */
   async createMovie(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const movieData: CreateMovieDto = req.body;
+      const movieData: BaseMovie = req.body;
       const newMovie = await movieService.createMovie(movieData);
       createdResponse(res, { movie: newMovie });
     } catch (error) {
@@ -103,7 +103,7 @@ export class MovieController {
   async updateMovie(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const movieData: UpdateMovieDto = req.body;
+      const movieData: BaseMovie = req.body;
       const updatedMovie = await movieService.updateMovie(id, movieData);
       successResponse(res, { movie: updatedMovie });
     } catch (error) {

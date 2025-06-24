@@ -1,5 +1,5 @@
 import db from '@config/database';
-import { Movie, CreateMovieDto, UpdateMovieDto, MovieQueryParams } from '../types/movie';
+import { Movie, BaseMovie, MovieQueryParams } from '../types/movie';
 import logger from '@config/logger';
 
 /**
@@ -111,7 +111,7 @@ export const MovieModel = {
   /**
    * Create a new movie
    */
-  async create(movieData: CreateMovieDto): Promise<Movie> {
+  async create(movieData: BaseMovie): Promise<Movie> {
     try {
       const { title, release_year, genre, poster, rating } = movieData;
 
@@ -139,7 +139,7 @@ export const MovieModel = {
   /**
    * Update an existing movie
    */
-  async update(id: string, movieData: UpdateMovieDto): Promise<Movie | null> {
+  async update(id: string, movieData: BaseMovie): Promise<Movie | null> {
     try {
       // Build dynamic query based on provided fields
       const updates: string[] = [];
