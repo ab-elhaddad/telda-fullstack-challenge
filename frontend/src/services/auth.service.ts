@@ -84,7 +84,7 @@ export const authService = {
   },
 
   async updateProfile(data: UpdateProfileData) {
-    const response = await authApi.put<ApiResponse<User>>(
+    const response = await authApi.patch<ApiResponse<User>>(
       "/auth/profile",
       data
     );
@@ -92,7 +92,7 @@ export const authService = {
   },
 
   async changePassword(data: UpdatePasswordData) {
-    const response = await authApi.put<ApiResponse<{ success: boolean }>>(
+    const response = await authApi.patch<ApiResponse<{ success: boolean }>>(
       "/auth/password",
       data
     );

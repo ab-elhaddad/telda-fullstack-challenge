@@ -16,9 +16,11 @@ import FormError from "@/components/ui/formError";
 import { useToast } from "@/components/ui/toast";
 
 export function ProfilePage() {
-  const { user, setUser } = useAuthStore();
+  const { user: data, setUser } = useAuthStore();
   const { isOpen, openModal, closeModal } = useModal();
   const { showToast } = useToast();
+  // @ts-ignore
+  const user = data.user as User;
 
   // Refs for focus management
   const currentPasswordRef = useRef<HTMLInputElement>(null);
@@ -32,7 +34,6 @@ export function ProfilePage() {
 
   const [formData, setFormData] = useState({
     name: user?.name || "",
-    email: user?.email || "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -44,20 +45,21 @@ export function ProfilePage() {
       setFormData((prev) => ({
         ...prev,
         name: profileData.name || "",
-        email: profileData.email || "",
       }));
     }
   }, [profileData]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>(
+    {}
+  );
 
   // Update profile mutation
   const { mutate: updateProfile, isPending: isUpdating } = useMutation({
-    mutationFn: (data: { name: string; email: string }) =>
-      authService.updateProfile(data),
+    mutationFn: (data: { name: string }) => authService.updateProfile(data),
     onSuccess: (data) => {
-      if (data.user) {
-        setUser(data.user);
+      if (data) {
+        setUser(data);
         showToast("Profile updated successfully", "success");
       }
     },
@@ -72,18 +74,19 @@ export function ProfilePage() {
   // Change password mutation
   const { mutate: changePassword, isPending: isChangingPassword } = useMutation(
     {
-      mutationFn: (data: { currentPassword: string; newPassword: string }) =>
-        authService.changePassword(data),
+      mutationFn: (data: {
+        oldPassword: string;
+        newPassword: string;
+        confirmPassword: string;
+      }) => authService.changePassword(data),
       onSuccess: () => {
+        ``;
         showToast("Password changed successfully", "success");
         closeModal();
         resetPasswordForm();
       },
       onError: (error: any) => {
-        showToast(
-          error?.response?.data?.message || "Failed to change password",
-          "error"
-        );
+        setPasswordErrors({ server: error?.response?.data?.message });
       },
     }
   );
@@ -109,12 +112,6 @@ export function ProfilePage() {
       newErrors.name = "Name is required";
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -136,7 +133,7 @@ export function ProfilePage() {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
-    setErrors(newErrors);
+    setPasswordErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -146,7 +143,6 @@ export function ProfilePage() {
     if (validateProfileForm()) {
       updateProfile({
         name: formData.name,
-        email: formData.email,
       });
     }
   };
@@ -156,8 +152,9 @@ export function ProfilePage() {
 
     if (validatePasswordForm()) {
       changePassword({
-        currentPassword: formData.currentPassword,
+        oldPassword: formData.currentPassword,
         newPassword: formData.newPassword,
+        confirmPassword: formData.confirmPassword,
       });
     }
   };
@@ -192,67 +189,142 @@ export function ProfilePage() {
             {/* Personal Information Skeleton */}
             <Card data-testid="skeleton-card">
               <CardHeader>
-                <SkeletonCard className="h-7 w-40" aria-label="Loading title" data-testid="skeleton-title" />
-                <SkeletonCard className="h-4 w-full max-w-[250px]" aria-label="Loading subtitle" data-testid="skeleton-subtitle" />
+                <SkeletonCard
+                  className="h-7 w-40"
+                  aria-label="Loading title"
+                  data-testid="skeleton-title"
+                />
+                <SkeletonCard
+                  className="h-4 w-full max-w-[250px]"
+                  aria-label="Loading subtitle"
+                  data-testid="skeleton-subtitle"
+                />
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <SkeletonCard className="h-10 w-full" aria-label="Loading input field" data-testid="skeleton-input" />
-                  <SkeletonCard className="h-10 w-full" aria-label="Loading input field" data-testid="skeleton-input" />
+                  <SkeletonCard
+                    className="h-10 w-full"
+                    aria-label="Loading input field"
+                    data-testid="skeleton-input"
+                  />
+                  <SkeletonCard
+                    className="h-10 w-full"
+                    aria-label="Loading input field"
+                    data-testid="skeleton-input"
+                  />
                 </div>
               </CardContent>
               <CardFooter className="justify-end space-x-2">
-                <SkeletonCard className="h-9 w-24" aria-label="Loading button" data-testid="skeleton-button" />
+                <SkeletonCard
+                  className="h-9 w-24"
+                  aria-label="Loading button"
+                  data-testid="skeleton-button"
+                />
               </CardFooter>
             </Card>
-            
+
             {/* Security Settings Skeleton */}
             <Card data-testid="skeleton-card">
               <CardHeader>
-                <SkeletonCard className="h-7 w-40" aria-label="Loading title" data-testid="skeleton-title" />
+                <SkeletonCard
+                  className="h-7 w-40"
+                  aria-label="Loading title"
+                  data-testid="skeleton-title"
+                />
               </CardHeader>
               <CardContent>
-                <SkeletonCard className="h-4 w-full max-w-[350px]" aria-label="Loading text" data-testid="skeleton-text" />
+                <SkeletonCard
+                  className="h-4 w-full max-w-[350px]"
+                  aria-label="Loading text"
+                  data-testid="skeleton-text"
+                />
                 <div className="mt-4">
-                  <SkeletonCard className="h-9 w-32" aria-label="Loading button" data-testid="skeleton-button" />
+                  <SkeletonCard
+                    className="h-9 w-32"
+                    aria-label="Loading button"
+                    data-testid="skeleton-button"
+                  />
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Account Preferences Skeleton */}
             <Card data-testid="skeleton-card">
               <CardHeader>
-                <SkeletonCard className="h-7 w-40" aria-label="Loading title" data-testid="skeleton-title" />
+                <SkeletonCard
+                  className="h-7 w-40"
+                  aria-label="Loading title"
+                  data-testid="skeleton-title"
+                />
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">
-                      <SkeletonCard className="h-5 w-40" aria-label="Loading title" data-testid="skeleton-title" />
-                      <SkeletonCard className="h-4 w-60" aria-label="Loading description" data-testid="skeleton-text" />
+                      <SkeletonCard
+                        className="h-5 w-40"
+                        aria-label="Loading title"
+                        data-testid="skeleton-title"
+                      />
+                      <SkeletonCard
+                        className="h-4 w-60"
+                        aria-label="Loading description"
+                        data-testid="skeleton-text"
+                      />
                     </div>
-                    <SkeletonCard className="h-6 w-11" aria-label="Loading toggle" data-testid="skeleton-toggle" />
+                    <SkeletonCard
+                      className="h-6 w-11"
+                      aria-label="Loading toggle"
+                      data-testid="skeleton-toggle"
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">
-                      <SkeletonCard className="h-5 w-40" aria-label="Loading title" data-testid="skeleton-title" />
-                      <SkeletonCard className="h-4 w-60" aria-label="Loading description" data-testid="skeleton-text" />
+                      <SkeletonCard
+                        className="h-5 w-40"
+                        aria-label="Loading title"
+                        data-testid="skeleton-title"
+                      />
+                      <SkeletonCard
+                        className="h-4 w-60"
+                        aria-label="Loading description"
+                        data-testid="skeleton-text"
+                      />
                     </div>
-                    <SkeletonCard className="h-6 w-11" aria-label="Loading toggle" data-testid="skeleton-toggle" />
+                    <SkeletonCard
+                      className="h-6 w-11"
+                      aria-label="Loading toggle"
+                      data-testid="skeleton-toggle"
+                    />
                   </div>
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Danger Zone Skeleton */}
-            <Card data-testid="skeleton-card" className="border-red-200 dark:border-red-900">
+            <Card
+              data-testid="skeleton-card"
+              className="border-red-200 dark:border-red-900"
+            >
               <CardHeader>
-                <SkeletonCard className="h-7 w-40" aria-label="Loading title" data-testid="skeleton-danger-title" />
+                <SkeletonCard
+                  className="h-7 w-40"
+                  aria-label="Loading title"
+                  data-testid="skeleton-danger-title"
+                />
               </CardHeader>
               <CardContent>
-                <SkeletonCard className="h-4 w-full max-w-[350px]" aria-label="Loading text" data-testid="skeleton-text" />
+                <SkeletonCard
+                  className="h-4 w-full max-w-[350px]"
+                  aria-label="Loading text"
+                  data-testid="skeleton-text"
+                />
                 <div className="mt-4">
-                  <SkeletonCard className="h-9 w-32" aria-label="Loading danger button" data-testid="skeleton-danger-button" />
+                  <SkeletonCard
+                    className="h-9 w-32"
+                    aria-label="Loading danger button"
+                    data-testid="skeleton-danger-button"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -274,6 +346,7 @@ export function ProfilePage() {
                         id="name"
                         name="name"
                         type="text"
+                        defaultValue={user?.name}
                         value={formData.name}
                         onChange={handleInputChange}
                         aria-invalid={!!errors.name}
@@ -287,34 +360,13 @@ export function ProfilePage() {
                       />
                       {errors.name && <FormError message={errors.name} />}
                     </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium">
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        aria-invalid={!!errors.email}
-                        aria-describedby={
-                          errors.email ? "email-error" : undefined
-                        }
-                        autoComplete="email"
-                        className={`w-full p-2 rounded-md border ${
-                          errors.email ? "border-red-500" : "border-gray-300"
-                        } focus:outline-none focus:ring-2 focus:ring-primary`}
-                      />
-                      {errors.email && <FormError message={errors.email} />}
-                    </div>
                   </div>
                 </form>
               </CardContent>
               <CardFooter className="flex justify-between">
                 <Button
                   type="submit"
+                  variant="outline"
                   form="profile-form"
                   isLoading={isUpdating}
                   disabled={isUpdating}
@@ -322,6 +374,21 @@ export function ProfilePage() {
                   {isUpdating ? "Saving..." : "Save Changes"}
                 </Button>
               </CardFooter>
+              <CardContent>
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={user?.email}
+                    autoComplete="email"
+                    className={`w-full p-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary`}
+                  />
+                </div>
+              </CardContent>
             </Card>
 
             {/* Security Settings */}
@@ -339,45 +406,6 @@ export function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Account Preferences */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Preferences</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Email Notifications</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Receive updates about new releases and recommendations
-                      </p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        defaultChecked
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                    </label>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Dark Mode</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Toggle between light and dark theme
-                      </p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                    </label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Danger Zone */}
             <Card className="border border-red-200 dark:border-red-900">
               <CardHeader>
@@ -387,17 +415,20 @@ export function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-red-600 dark:text-red-400">
-                  Once you delete your account, there is no going back. Please be
-                  certain.
+                  Once you delete your account, there is no going back. Please
+                  be certain.
                 </p>
                 <div className="mt-4">
-                  <Button 
+                  <Button
                     variant="danger"
                     data-testid="delete-account-button"
                     onClick={() => {
                       // This would typically show a confirmation modal
                       // For now we'll just have a placeholder
-                      showToast("Account deletion requires confirmation. Feature coming soon.", "error");
+                      showToast(
+                        "Account deletion requires confirmation. Feature coming soon.",
+                        "error"
+                      );
                     }}
                   >
                     Delete Account
@@ -418,6 +449,25 @@ export function ProfilePage() {
           title="Change Password"
         >
           <form onSubmit={handlePasswordSubmit} className="py-4">
+            {passwordErrors.server && (
+              <div className="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-700 border-l-4 border-red-600 dark:bg-red-900/30 dark:text-red-400 dark:border-red-500">
+                <div className="flex items-center">
+                  <svg
+                    className="h-4 w-4 mr-2"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  {passwordErrors.server}
+                </div>
+              </div>
+            )}
             <div className="space-y-4">
               <div className="space-y-2">
                 <label
@@ -444,9 +494,8 @@ export function ProfilePage() {
                       : "border-gray-300"
                   } focus:outline-none focus:ring-2 focus:ring-primary`}
                 />
-                {errors.currentPassword && (
-                  <FormError message={errors.currentPassword} />
-                )}
+
+                <FormError message={passwordErrors.currentPassword} />
               </div>
 
               <div className="space-y-2">
@@ -468,9 +517,7 @@ export function ProfilePage() {
                     errors.newPassword ? "border-red-500" : "border-gray-300"
                   } focus:outline-none focus:ring-2 focus:ring-primary`}
                 />
-                {errors.newPassword && (
-                  <FormError message={errors.newPassword} />
-                )}
+                <FormError message={passwordErrors.newPassword} />
               </div>
 
               <div className="space-y-2">
@@ -497,9 +544,7 @@ export function ProfilePage() {
                       : "border-gray-300"
                   } focus:outline-none focus:ring-2 focus:ring-primary`}
                 />
-                {errors.confirmPassword && (
-                  <FormError message={errors.confirmPassword} />
-                )}
+                <FormError message={passwordErrors.confirmPassword} />
               </div>
             </div>
 
