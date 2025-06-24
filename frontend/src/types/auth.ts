@@ -1,39 +1,94 @@
-// User-related types
+/**
+ * User payload for JWT access tokens
+ * Aligned with backend UserPayload
+ */
+export interface UserPayload {
+  id: string;
+  email: string;
+  username: string;
+  role: string;
+}
+
+/**
+ * User-related types
+ */
 export interface User {
-  id: number;
+  id: string; // Changed from number to string to match backend
   name: string;
   email: string;
-  created_at: string;
-  updated_at: string;
+  username: string;
+  role: string;
+  avatarUrl?: string;
+  created_at?: Date; // Changed from string to Date for consistency
+  updated_at?: Date; // Changed from string to Date for consistency
 }
 
-// Auth-related types
+/**
+ * Authentication tokens response
+ * Aligned with backend AuthTokens
+ */
 export interface AuthTokens {
-  access_token: string;
+  accessToken: string; // Changed from access_token to match backend
+  expiresIn: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    name: string;
+    role: string;
+    avatarUrl?: string;
+  };
 }
 
-// Request payload types
-export interface LoginCredentials {
+/**
+ * Refresh token payload with JWT ID for potential blacklisting
+ * Aligned with backend RefreshTokenPayload
+ */
+export interface RefreshTokenPayload extends UserPayload {
+  jti: string; // JWT ID for potential blacklisting
+}
+
+/**
+ * Login credentials
+ * Aligned with backend LoginCredentials
+ */
+export type LoginCredentials = {
+  password: string;
+} & ({ email: never; username: string } | { email: string; username: never });
+
+/**
+ * Registration data
+ * Aligned with backend RegistrationData
+ */
+export interface RegistrationData {
+  username: string;
   email: string;
   password: string;
-}
-
-export interface RegisterData {
   name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
+  // confirmPassword removed as it's not in the backend model
 }
 
+/**
+ * Profile update data
+ * Aligned with backend UpdateProfileData
+ */
 export interface UpdateProfileData {
-  name?: string;
+  username?: string;
   email?: string;
+  name?: string;
+  bio?: string;
+  avatarUrl?: string;
+  oldPassword?: string;
+  newPassword?: string;
 }
 
+/**
+ * Password update data (Frontend-specific)
+ */
 export interface UpdatePasswordData {
-  current_password: string;
-  new_password: string;
-  confirm_password: string;
+  oldPassword: string; // Changed to match naming in UpdateProfileData
+  newPassword: string; // Changed to match naming in UpdateProfileData
+  confirmPassword: string;
 }
 
 // Auth state types

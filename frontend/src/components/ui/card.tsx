@@ -29,12 +29,13 @@ interface CardHeaderProps {
   children: ReactNode;
 }
 
-export const CardHeader = ({ className, children, ...props }: CardHeaderProps) => {
+export const CardHeader = ({
+  className,
+  children,
+  ...props
+}: CardHeaderProps) => {
   return (
-    <div
-      className={cn("p-6 pb-2", className)}
-      {...props}
-    >
+    <div className={cn("p-6 pb-2", className)} {...props}>
       {children}
     </div>
   );
@@ -47,7 +48,12 @@ interface CardTitleProps {
   as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 }
 
-export const CardTitle = ({ className, children, as = "h3", ...props }: CardTitleProps) => {
+export const CardTitle = ({
+  className,
+  children,
+  as = "h3",
+  ...props
+}: CardTitleProps) => {
   const Component = as;
   return (
     <Component
@@ -68,7 +74,11 @@ interface CardDescriptionProps {
   children: ReactNode;
 }
 
-export const CardDescription = ({ className, children, ...props }: CardDescriptionProps) => {
+export const CardDescription = ({
+  className,
+  children,
+  ...props
+}: CardDescriptionProps) => {
   return (
     <p
       className={cn("text-sm text-gray-500 dark:text-gray-400", className)}
@@ -85,7 +95,11 @@ interface CardContentProps {
   children: ReactNode;
 }
 
-export const CardContent = ({ className, children, ...props }: CardContentProps) => {
+export const CardContent = ({
+  className,
+  children,
+  ...props
+}: CardContentProps) => {
   return (
     <div className={cn("p-6 pt-2", className)} {...props}>
       {children}
@@ -99,12 +113,13 @@ interface CardFooterProps {
   children: ReactNode;
 }
 
-export const CardFooter = ({ className, children, ...props }: CardFooterProps) => {
+export const CardFooter = ({
+  className,
+  children,
+  ...props
+}: CardFooterProps) => {
   return (
-    <div
-      className={cn("flex items-center p-6 pt-0", className)}
-      {...props}
-    >
+    <div className={cn("flex items-center p-6 pt-0", className)} {...props}>
       {children}
     </div>
   );
@@ -118,25 +133,27 @@ interface CardImageProps {
   aspectRatio?: "auto" | "video" | "square" | "portrait";
 }
 
-export const CardImage = ({ 
-  src, 
-  alt, 
+export const CardImage = ({
+  src,
+  alt,
   className,
   aspectRatio = "auto",
-  ...props 
+  ...props
 }: CardImageProps) => {
   const aspectRatioClasses = {
     auto: "",
     video: "aspect-video",
     square: "aspect-square",
-    portrait: "aspect-[2/3]"
+    portrait: "aspect-[2/3]",
   };
-  
+
   return (
-    <div className={cn(
-      "overflow-hidden rounded-t-lg",
-      aspectRatioClasses[aspectRatio]
-    )}>
+    <div
+      className={cn(
+        "overflow-hidden rounded-t-lg",
+        aspectRatioClasses[aspectRatio]
+      )}
+    >
       <img
         src={src}
         alt={alt}

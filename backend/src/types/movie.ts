@@ -7,6 +7,7 @@ export interface BaseMovie {
   genre?: string;
   poster?: string;
   rating?: number;
+  total_views: number;
 }
 
 /**
