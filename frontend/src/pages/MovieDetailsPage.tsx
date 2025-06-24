@@ -7,6 +7,17 @@ import { useToast } from "@/components/ui/toast";
 import watchlistService from "@/services/watchlist.service";
 import { Button } from "@/components/ui/button";
 
+function parseGenres(genres: string) {
+  // Handle genres in format like "{"Family","Comedy","Animation","Science Fiction"}"
+  if (genres) {
+    return genres
+      .replace(/[{}]/g, "") // Remove curly braces
+      .split(",") // Split by comma
+      .map((genre) => genre.replace(/"/g, "").trim()); // Remove quotes and trim whitespace
+  }
+  return [];
+}
+
 export function MovieDetailsPage() {
   const { id: movieId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -24,7 +35,7 @@ export function MovieDetailsPage() {
     queryFn: () => movieService.getMovieById(movieId as string),
     enabled: movieId !== undefined,
   });
-  
+
   // Safely access movie data from the API response structure
   const movie = movieResponse?.data?.movie;
 
@@ -61,13 +72,13 @@ export function MovieDetailsPage() {
       navigate("/login");
       return;
     }
-    
+
     // Don't add again if already in watchlist
     if (isInWatchlist) {
       showToast("This movie is already in your watchlist", "info");
       return;
     }
-    
+
     // Directly add to watchlist without modal
     addToWatchlist();
   };
@@ -181,7 +192,7 @@ export function MovieDetailsPage() {
           <Button
             variant={isInWatchlist ? "secondary" : "outline"}
             onClick={handleAddToWatchlist}
-            className={`w-full mt-6 ${isInWatchlist ? 'bg-green-600 hover:bg-green-700' : 'bg-primary hover:bg-primary hover:brightness-110'} text-white font-semibold py-3 px-4 rounded-md flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-glow`}
+            className={`w-full mt-6 ${isInWatchlist ? "bg-green-600 hover:bg-green-700" : "bg-primary hover:bg-primary hover:brightness-110"} text-white font-semibold py-3 px-4 rounded-md flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-glow`}
             disabled={isAddingToWatchlist}
           >
             {isAddingToWatchlist ? (
@@ -241,7 +252,7 @@ export function MovieDetailsPage() {
           {/* Genres - Netflix style badges */}
           <div className="mb-8">
             <div className="flex flex-wrap gap-2">
-              {movie?.genre?.split(", ").map((genre) => (
+              {parseGenres(movie?.genre!).map((genre: string) => (
                 <span
                   key={genre}
                   className="bg-gray-800/70 text-gray-300 px-3 py-1 rounded-sm text-sm border border-gray-700/50"
@@ -259,7 +270,7 @@ export function MovieDetailsPage() {
             </h2>
             <div className="text-gray-300 space-y-2">
               <p>
-                A {movie?.genre?.split(", ")[0]} film released in{" "}
+                A {parseGenres(movie?.genre!).join(", ")[0]} film released in{" "}
                 {movie?.release_year}.
               </p>
               <p>
@@ -268,14 +279,6 @@ export function MovieDetailsPage() {
               </p>
             </div>
           </div>
-
-          {/* Overview */}
-          {/* <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Overview</h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              {movie.data.}
-            </p>
-          </div> */}
         </div>
       </div>
 
