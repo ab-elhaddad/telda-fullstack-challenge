@@ -45,21 +45,25 @@ Node.js Express backend API for the Movie Application with PostgreSQL database.
 ### Installation
 
 1. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 2. Set up environment variables:
+
    ```bash
    cp .env.example .env
    ```
+
    Then edit the `.env` file with your configuration.
 
 3. Initialize and seed the database:
+
    ```bash
    # Start the server to create database tables
    pnpm run dev
-   
+
    # In another terminal, you can seed sample movie data (optional)
    pnpm run seed-movies
    ```
@@ -71,63 +75,63 @@ Node.js Express backend API for the Movie Application with PostgreSQL database.
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Port to run the server on | `5000` |
-| `NODE_ENV` | Environment (development/production) | `development` |
-| `DATABASE_URL` | PostgreSQL connection string | - |
-| `JWT_SECRET` | Secret for signing JWT tokens | - |
-| `JWT_EXPIRES_IN` | Access token expiry | `1d` |
-| `JWT_REFRESH_SECRET` | Secret for refresh tokens | - |
-| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiry | `7d` |
-| `BCRYPT_SALT_ROUNDS` | Rounds for password hashing | `10` |
-| `CORS_ORIGIN` | Allowed origins for CORS | `http://localhost:3000` |
-| `CLOUD_STORAGE_PROVIDER` | Cloud provider for file uploads | - |
+| Variable                 | Description                          | Default                 |
+| ------------------------ | ------------------------------------ | ----------------------- |
+| `PORT`                   | Port to run the server on            | `5000`                  |
+| `NODE_ENV`               | Environment (development/production) | `development`           |
+| `DATABASE_URL`           | PostgreSQL connection string         | -                       |
+| `JWT_SECRET`             | Secret for signing JWT tokens        | -                       |
+| `JWT_EXPIRES_IN`         | Access token expiry                  | `1d`                    |
+| `JWT_REFRESH_SECRET`     | Secret for refresh tokens            | -                       |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiry                 | `7d`                    |
+| `BCRYPT_SALT_ROUNDS`     | Rounds for password hashing          | `10`                    |
+| `CORS_ORIGIN`            | Allowed origins for CORS             | `http://localhost:3000` |
+| `CLOUD_STORAGE_PROVIDER` | Cloud provider for file uploads      | -                       |
 
 ## API Endpoints
 
 ### Authentication
 
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|---------------|
-| `POST` | `/api/auth/register` | Register a new user | Public |
-| `POST` | `/api/auth/login` | Login user | Public |
-| `POST` | `/api/auth/logout` | Logout user | Auth Required |
-| `GET` | `/api/auth/me` | Get user profile | Auth Required |
-| `PATCH` | `/api/auth/profile` | Update user profile (name, avatar) | Auth Required |
-| `PATCH` | `/api/auth/password` | Reset user password | Auth Required |
+| Method  | Endpoint             | Description                        | Authentication |
+| ------- | -------------------- | ---------------------------------- | -------------- |
+| `POST`  | `/api/auth/register` | Register a new user                | Public         |
+| `POST`  | `/api/auth/login`    | Login user                         | Public         |
+| `POST`  | `/api/auth/logout`   | Logout user                        | Auth Required  |
+| `GET`   | `/api/auth/me`       | Get user profile                   | Auth Required  |
+| `PATCH` | `/api/auth/profile`  | Update user profile (name, avatar) | Auth Required  |
+| `PATCH` | `/api/auth/password` | Reset user password                | Auth Required  |
 
 ### Movies
 
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|---------------|
-| `GET` | `/api/movies` | List/search all movies with advanced filtering | Public |
-| `GET` | `/api/movies/:id` | Get movie details | Public |
-| `POST` | `/api/movies` | Create a movie | Admin Required |
-| `PUT` | `/api/movies/:id` | Update a movie | Admin Required |
-| `DELETE` | `/api/movies/:id` | Delete a movie | Admin Required |
+| Method   | Endpoint          | Description                                    | Authentication |
+| -------- | ----------------- | ---------------------------------------------- | -------------- |
+| `GET`    | `/api/movies`     | List/search all movies with advanced filtering | Public         |
+| `GET`    | `/api/movies/:id` | Get movie details                              | Public         |
+| `POST`   | `/api/movies`     | Create a movie                                 | Admin Required |
+| `PUT`    | `/api/movies/:id` | Update a movie                                 | Admin Required |
+| `DELETE` | `/api/movies/:id` | Delete a movie                                 | Admin Required |
 
 ### Comments
 
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|---------------|
-| `GET` | `/api/movies/:movieId/comments` | Get comments for a movie | Public |
-| `POST` | `/api/movies/:movieId/comments` | Add a comment | Auth Required |
+| Method | Endpoint                        | Description              | Authentication |
+| ------ | ------------------------------- | ------------------------ | -------------- |
+| `GET`  | `/api/movies/:movieId/comments` | Get comments for a movie | Public         |
+| `POST` | `/api/movies/:movieId/comments` | Add a comment            | Auth Required  |
 
 ### Watchlist
 
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|---------------|
-| `GET` | `/api/watchlist` | Get user's watchlist | Auth Required |
-| `POST` | `/api/watchlist` | Add movie to watchlist | Auth Required |
-| `DELETE` | `/api/watchlist/:movieId` | Remove from watchlist | Auth Required |
-| `PATCH` | `/api/watchlist/:movieId/status` | Update watchlist status | Auth Required |
+| Method   | Endpoint                         | Description             | Authentication |
+| -------- | -------------------------------- | ----------------------- | -------------- |
+| `GET`    | `/api/watchlist`                 | Get user's watchlist    | Auth Required  |
+| `POST`   | `/api/watchlist`                 | Add movie to watchlist  | Auth Required  |
+| `DELETE` | `/api/watchlist/:movieId`        | Remove from watchlist   | Auth Required  |
+| `PATCH`  | `/api/watchlist/:movieId/status` | Update watchlist status | Auth Required  |
 
 ### File Upload
 
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|---------------|
-| `POST` | `/api/upload` | Upload a file | Auth Required |
+| Method | Endpoint      | Description   | Authentication |
+| ------ | ------------- | ------------- | -------------- |
+| `POST` | `/api/upload` | Upload a file | Auth Required  |
 
 ## Database Seeding
 
@@ -140,6 +144,7 @@ pnpm run seed-movies
 ```
 
 This script:
+
 1. Uses the `seed-movies.ts` script in the `src/scripts` directory
 2. Requires a `TMDB_API_KEY` environment variable to be set in your `.env` file
 3. Imports movies from The Movie Database (TMDB) API into your local database
@@ -181,9 +186,12 @@ The application uses PostgreSQL with direct queries (no ORM). Main tables:
 
 ## Future Enhancements
 
+- **Database Migration System**: Implement a migration system to manage database schema changes without needing to rerun initial.sql scripts
+- **Comments on Movies**: Restore comment functionality to allow users to share their thoughts on movies
+- **Profile Picture Upload**: Implement file upload functionality for user profile pictures with proper storage and validation
+- **Admin Dashboard**: Create an admin panel for movie CRUD operations and analytics visualization
 - **Cloud Storage Integration**: Implement actual cloud storage (AWS S3, Cloudinary, etc.) for file uploads
 - **Email Verification**: Add email verification for user registration
-- **Password Reset**: Implement password reset functionality
+- **Password Forget**: Implement password froget functionality
 - **Advanced Search**: Implement full-text search for movies
-- **Rate Limiting**: Add rate limiting for API endpoints
 - **Blacklist for JWT**: Implement token blacklisting for enhanced security
