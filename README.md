@@ -38,8 +38,9 @@ movie-application/
 
 ### Prerequisites
 
-- Node.js v16+ and npm/pnpm
+- Node.js v16+ and pnpm
 - PostgreSQL database (or Neon Postgres account)
+- TMDB API key (optional, for adding sample movie data)
 - Docker and Docker Compose (optional, for containerized setup)
 
 ### Installation
@@ -105,36 +106,23 @@ docker-compose up
 
 - Secure JWT-based authentication using access and refresh tokens
 - Tokens stored exclusively in HttpOnly cookies for enhanced security
+- Cookies available to all API paths, not just auth routes
 - Automatic token refreshing and token rotation
 - Login via email or username
 - User registration with unique validation
 - Separate endpoints for profile management and password reset
-- Profile updates for name and avatar URL
+- Profile updates for name and avatar URL using PATCH
 - Secure password reset with current password verification
-- Password change with old password verification
+- Force re-login after password change for enhanced security
 
 ### Movie Management
 
-- Browse, search, and filter movies
-- Comment on movies
-- Personal watchlists
-
-### File Upload
-
-- API endpoint for uploading profile images
-- Validation for image types and sizes
-- Blueprint for cloud storage integration
+- Browse, search, and filter movies with advanced filtering
+- Movie management (create, update, delete) restricted to admin users
+- Personal watchlists with tracking status ('to_watch' or 'watched')
 
 ## Project Documentation
 
 For more detailed information, see the READMEs in each directory:
 
 - [Backend README](./backend/README.md)
-
-## Deployment
-
-[Add deployment instructions here]
-
-## License
-
-[Add license information here]

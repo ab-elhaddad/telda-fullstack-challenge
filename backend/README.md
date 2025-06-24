@@ -11,9 +11,9 @@ Node.js Express backend API for the Movie Application with PostgreSQL database.
   - Pagination with customizable limit and offset
 - **Authentication**: Secure JWT-based authentication system
   - Stateless access tokens and refresh tokens
-  - HttpOnly cookies for secure token storage
+  - HttpOnly cookies for secure token storage (available to all API paths)
   - Login via email or username
-  - Profile management with bio and profile picture
+  - Separate endpoints for profile management and password reset
 - **Comments**: Add and view comments on movies
 - **Watchlists**: Create and manage personal movie watchlists
   - Track watch status ('to_watch' or 'watched')
@@ -92,7 +92,6 @@ Node.js Express backend API for the Movie Application with PostgreSQL database.
 |--------|----------|-------------|---------------|
 | `POST` | `/api/auth/register` | Register a new user | Public |
 | `POST` | `/api/auth/login` | Login user | Public |
-| `POST` | `/api/auth/refresh` | Refresh access token | Cookie Required |
 | `POST` | `/api/auth/logout` | Logout user | Auth Required |
 | `GET` | `/api/auth/me` | Get user profile | Auth Required |
 | `PATCH` | `/api/auth/profile` | Update user profile (name, avatar) | Auth Required |
@@ -102,7 +101,7 @@ Node.js Express backend API for the Movie Application with PostgreSQL database.
 
 | Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
-| `GET` | `/api/movies` | List all movies | Public |
+| `GET` | `/api/movies` | List/search all movies with advanced filtering | Public |
 | `GET` | `/api/movies/:id` | Get movie details | Public |
 | `POST` | `/api/movies` | Create a movie | Admin Required |
 | `PUT` | `/api/movies/:id` | Update a movie | Admin Required |
@@ -122,6 +121,7 @@ Node.js Express backend API for the Movie Application with PostgreSQL database.
 | `GET` | `/api/watchlist` | Get user's watchlist | Auth Required |
 | `POST` | `/api/watchlist` | Add movie to watchlist | Auth Required |
 | `DELETE` | `/api/watchlist/:movieId` | Remove from watchlist | Auth Required |
+| `PATCH` | `/api/watchlist/:movieId/status` | Update watchlist status | Auth Required |
 
 ### File Upload
 
